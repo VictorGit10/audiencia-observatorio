@@ -55,8 +55,7 @@ const CANAIS = {
 
 const ACOES = {
   select_category: 'Filtrou o catálogo por categoria',
-  load_more: 'Pediu para carregar mais itens',
-  open_weekly_highlight: 'Abriu o destaque da semana',
+  load_more: 'Clicou em “Carregar mais itens” no catálogo',
   open_article: 'Abriu um artigo',
   nav_panorama: 'Foi para o Panorama da IA generativa',
   select_type_tab: 'Trocou o tipo de conteúdo (artigos, notícias…)',
@@ -67,11 +66,9 @@ const ACOES = {
   select_keyword: 'Clicou numa palavra da nuvem de assuntos',
   select_paper_area: 'Filtrou artigos por área',
   daily_news_period: 'Mudou o período das notícias diárias',
-  toggle_featured_history: 'Abriu os destaques anteriores',
   open_obia: 'Saiu para o OBIA (observatório nacional)',
   select_theme: 'Filtrou por tema',
   nav_subjects: 'Foi para “Assuntos”',
-  download_weekly_highlight_podcast: 'Baixou o podcast do destaque da semana',
   open_interactive_inference: 'Abriu o interativo “Por dentro da inferência”',
   open_article_pdf: 'Abriu o PDF de um artigo',
   daily_news_open_article: 'Abriu uma notícia diária',
@@ -93,6 +90,77 @@ const FONTES = { '(direct)': null, google: 'Google (busca)', bing: 'Bing (busca)
   'teams.public.onecdn.static.microsoft': 'Microsoft Teams', 'linkedin.com': 'LinkedIn', 'lnkd.in': 'LinkedIn',
   'chatgpt.com': 'ChatGPT', 'duckduckgo': 'DuckDuckGo', 'ufg.br': 'Portal UFG', 'jornalufg.ufg.br': 'Jornal UFG',
   'classroom.google.com': 'Google Sala de Aula', 'youtube.com': 'YouTube', 'm.youtube.com': 'YouTube' };
+
+// ── destaque da semana ──────────────────────────────────────────────────────
+// Eventos próprios do bloco (usados até 19/set/2026, quando o bloco mudou de formato)
+const EVENTOS_DESTAQUE = {
+  open_weekly_highlight: 'Abriu o destaque',
+  open_weekly_highlight_image: 'Ampliou a imagem',
+  open_weekly_highlight_podcast: 'Ouviu a análise em áudio',
+  download_weekly_highlight_podcast: 'Ouviu a análise em áudio',
+  toggle_featured_history: 'Consultou destaques anteriores',
+  open_featured_history: 'Consultou destaques anteriores',
+};
+// O formato novo leva a textos, áudios e slides fora do site: o GA registra esses cliques
+// automaticamente (evento "click" + linkUrl). Os links de cada edição são lidos do código do
+// site e acumulados em destaque-links.json, para que edições antigas continuem sendo contadas.
+const DESTAQUE_SRC = 'https://raw.githubusercontent.com/lapig-ufg/observatorio-ia/main/src/FeaturedDebate.tsx';
+const DESTAQUE_ARQ = join(HERE, 'destaque-links.json');
+
+async function linksDoDestaque() {
+  let links = {};
+  try { links = JSON.parse(readFileSync(DESTAQUE_ARQ, 'utf8')); } catch {}
+  let edicao = null;
+  try {
+    const tsx = await (await fetch(DESTAQUE_SRC)).text();
+    const fontes = Object.fromEntries([...tsx.matchAll(/^\s*(\w+):\s*"(https?:\/\/[^"]+)"/gm)].map(m => [m[1], m[2]]));
+    const ini = tsx.search(/\bpt:\s*\{/), fim = tsx.search(/\ben:\s*\{/);
+    const pt = tsx.slice(ini, fim > ini ? fim : undefined);
+    edicao = pt.match(/title:\s*"([^"]+)"/)?.[1] ?? null;
+    const add = (chave, titulo, tipo) => { const u = fontes[chave]; if (u) links[u] = { titulo, tipo, edicao }; };
+    for (const [card, titulo] of pt.matchAll(/\{[^{}]*?title:\s*"([^"]+)"[^{}]*\}/g)) {
+      add(card.match(/href:\s*sources\.(\w+)/)?.[1], titulo, 'Leu o texto original');
+      add(card.match(/slides:\s*sources\.(\w+)/)?.[1], titulo, 'Viu os slides');
+      for (const [, k] of (card.match(/audios:\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/sources\.(\w+)/g)) add(k, titulo, 'Ouviu a análise em áudio');
+    }
+    // links soltos no texto de apresentação
+    for (const u of Object.values(fontes)) if (!links[u]) links[u] = { titulo: 'Link no texto de apresentação', tipo: 'Leu o texto original', edicao };
+    writeFileSync(DESTAQUE_ARQ, JSON.stringify(links, null, 1) + '\n');
+  } catch (e) {
+    console.warn(`  ⚠ não consegui ler o destaque atual do site (${e.message}) — uso a lista salva`);
+  }
+  return { links, edicao };
+}
+
+async function destaque(inicio, fim, eventos, { links }) {
+  const urls = Object.keys(links);
+  const filtro = { orGroup: { expressions: [
+    { filter: { fieldName: 'eventName', inListFilter: { values: Object.keys(EVENTOS_DESTAQUE) } } },
+    ...(urls.length ? [{ andGroup: { expressions: [
+      { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
+      { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
+    ] } }] : []),
+  ] } };
+  const [cliques, pessoas] = await Promise.all([
+    urls.length ? relatorio(inicio, fim, ['linkUrl'], ['eventCount'], {
+      dimensionFilter: { andGroup: { expressions: [
+        { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
+        { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
+      ] } } }) : [],
+    relatorio(inicio, fim, [], ['activeUsers'], { dimensionFilter: filtro }),
+  ]);
+  const tipos = new Map(), itens = new Map();
+  const soma = (m, k, v) => m.set(k, (m.get(k) ?? 0) + v);
+  for (const l of eventos) if (EVENTOS_DESTAQUE[l.d[0]]) soma(tipos, EVENTOS_DESTAQUE[l.d[0]], l.m[0]);
+  for (const l of cliques) {
+    const info = links[l.d[0]];
+    soma(tipos, info.tipo, l.m[0]);
+    if (info.titulo !== 'Link no texto de apresentação') soma(itens, info.titulo, l.m[0]);
+  }
+  const ordenar = m => [...m].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
+  const porTipo = ordenar(tipos);
+  return { interacoes: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
+}
 
 // ── cliente ─────────────────────────────────────────────────────────────────
 const credPath = join(HERE, 'credenciais.json');
@@ -140,7 +208,7 @@ async function kpis(inicio, fim) {
   };
 }
 
-async function periodo(chave, inicio, fim) {
+async function periodo(chave, inicio, fim, dest) {
   const temAnterior = chave !== 'tudo';
   const dias = diasEntre(inicio, fim) + 1;
   const [atual, anterior, secoes, canais, fontes, cidades, paises, disp, eventos] = await Promise.all([
@@ -165,15 +233,17 @@ async function periodo(chave, inicio, fim) {
     paises: agrupar(paises, p => (p === '(not set)' ? null : PAISES[p] ?? p)).slice(0, 8),
     dispositivos: agrupar(disp, d => DISPOSITIVOS[d] ?? d),
     acoes: agrupar(eventos, e => ACOES[e] ?? null).slice(0, 12),
+    destaque: await destaque(inicio, fim, eventos, dest),
   };
 }
 
 async function coletar() {
   console.log(`▸ Observatório UFG-IA (${PROPERTY}) — até ${ONTEM}`);
   const janelas = { 7: addDays(ONTEM, -6), 30: addDays(ONTEM, -29), tudo: INICIO_COLETA };
+  const dest = await linksDoDestaque();
   const periodos = {};
   for (const [k, ini] of Object.entries(janelas)) {
-    periodos[k] = await periodo(k, ini < INICIO_COLETA ? INICIO_COLETA : ini, ONTEM);
+    periodos[k] = await periodo(k, ini < INICIO_COLETA ? INICIO_COLETA : ini, ONTEM, dest);
     console.log(`  ✓ período ${k}`);
   }
   const diarioBruto = await relatorio(INICIO_COLETA, ONTEM, ['date'], ['activeUsers', 'screenPageViews'],
@@ -184,7 +254,7 @@ async function coletar() {
     const m = mapa.get(d.replaceAll('-', '')) ?? [0, 0];
     diario.push({ data: d, visitantes: m[0], paginas: m[1] });
   }
-  return { geradoEm: new Date().toISOString(), inicioColeta: INICIO_COLETA, ate: ONTEM, periodos, diario };
+  return { geradoEm: new Date().toISOString(), inicioColeta: INICIO_COLETA, ate: ONTEM, edicaoDestaque: dest.edicao, periodos, diario };
 }
 
 try {

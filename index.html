@@ -160,6 +160,19 @@ section { margin-top: 20px; }
 .callout { margin-top: 18px; padding: 14px 16px; border-left: 3px solid var(--mark); background: var(--brand-soft);
   border-radius: 0 10px 10px 0; font-size: 15px; color: var(--ink-2); }
 
+/* destaque da semana */
+.destaque { background: var(--brand-soft); border-radius: 14px; padding: 22px; margin-bottom: 26px; display: grid; gap: 18px; }
+.destaque-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.destaque-top h3 { margin: 4px 0 6px; font: 400 22px/1.25 Georgia, "Times New Roman", serif; }
+.destaque-top p { color: var(--ink-2); font-size: 14px; max-width: 520px; }
+.destaque-num { text-align: right; }
+.destaque-num b { display: block; font-size: 44px; line-height: 1; font-weight: 600; color: var(--brand); letter-spacing: -.02em; }
+.destaque-num span { font-size: 13px; color: var(--muted); }
+.destaque .duo { gap: 24px; }
+.destaque .trk { background: color-mix(in srgb, var(--card) 70%, transparent); }
+.destaque .nota { font-size: 13px; color: var(--muted); }
+@media (max-width: 560px) { .destaque-num { text-align: left; } }
+
 /* glossário */
 details { border-top: 1px solid var(--line); padding: 14px 0; }
 details:last-child { border-bottom: 1px solid var(--line); }
@@ -222,8 +235,10 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     <div class="sec-head">
       <span class="eyebrow">2 · Conteúdo</span>
       <h2>O que as pessoas mais visitam</h2>
-      <p>Quantas vezes cada seção do site foi aberta. Uma mesma pessoa pode abrir várias seções — ou a mesma várias vezes.</p>
+      <p>O que desperta interesse no site: primeiro o destaque da semana, depois quantas vezes cada seção foi aberta.</p>
     </div>
+    <div class="destaque" id="destaque"></div>
+    <div class="sub-h">Seções do site<small>páginas vistas — uma mesma pessoa pode abrir várias seções, ou a mesma várias vezes</small></div>
     <div class="bars" id="secoes"></div>
   </section>
 
@@ -324,6 +339,17 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     'Página de entrada (site do LAPIG)': 'Endereço do Observatório dentro do site do LAPIG.',
   };
 
+  const DESC_ACOES = {
+    'Clicou em “Carregar mais itens” no catálogo': 'O catálogo mostra 15 publicações por vez. Cada clique no botão do fim da lista revela mais 15 — sinal de gente explorando o acervo além da primeira tela.',
+    'Filtrou o catálogo por categoria': 'Usou os botões de categoria para ver só um tipo de publicação.',
+    'Foi para o Panorama da IA generativa': 'Clicou no menu para abrir o Panorama (régua e guia dos modelos).',
+    'Trocou o tipo de conteúdo (artigos, notícias…)': 'Alternou entre as abas de tipo de conteúdo do catálogo.',
+    'Escolheu um tema de coleção': 'Filtrou uma coleção temática dentro do catálogo.',
+    'Clicou em “Participe” (formulário)': 'Abriu o formulário para sugerir conteúdo ou colaborar.',
+    'Clicou numa palavra da nuvem de assuntos': 'Usou a nuvem de palavras para filtrar o catálogo por assunto.',
+    'Saiu para o OBIA (observatório nacional)': 'Seguiu o link para o Observatório Brasileiro de IA.',
+  };
+
   let P = '30';
   try { const s = localStorage.getItem('obs-periodo'); if (s && D.periodos[s]) P = s; } catch {}
 
@@ -353,6 +379,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     t += `. Em média, cada uma passou <strong>${tempo(k.tempoMedio)}</strong> explorando o site`;
     if (topSec) t += `, e a seção mais procurada foi <strong>${esc(topSec)}</strong>`;
     t += '. ';
+    if (p.destaque?.pessoas) t += `<strong>${fmt(p.destaque.pessoas)} pessoas</strong> interagiram com o destaque da semana. `;
     if (topCanal) t += `A maioria chegou por <strong>${esc(topCanal)}</strong>`;
     if (topFonte) t += `; entre os sites que indicaram o Observatório, quem mais trouxe gente foi <strong>${esc(topFonte)}</strong>`;
     t += '. ';
@@ -397,6 +424,28 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
         <div class="trk"><div class="fill" style="width:${(100 * i.valor / max).toFixed(1)}%"></div></div>
       </div>`;
     }).join('');
+  }
+
+  function destaque(p) {
+    const d = p.destaque;
+    if (!d || !d.interacoes) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque da semana neste período.</p>'; return; }
+    $('destaque').innerHTML = `
+      <div class="destaque-top">
+        <div>
+          <span class="eyebrow">Destaque da semana</span>
+          <h3>${D.edicaoDestaque ? `Agora: “${esc(D.edicaoDestaque)}”` : 'Bloco editorial do catálogo'}</h3>
+          <p>O bloco no topo do Catálogo, com a curadoria da vez: textos, análises em áudio e slides. Contamos cada clique nesses materiais.</p>
+        </div>
+        <div class="destaque-num"><b class="num">${fmt(d.pessoas)}</b><span>pessoas interagiram<br>${fmt(d.interacoes)} cliques no total</span></div>
+      </div>
+      <div class="duo">
+        <div><div class="sub-h">O que fizeram<small>cliques</small></div><div class="bars compact" id="dest-tipo"></div></div>
+        <div><div class="sub-h">Materiais mais procurados<small>cliques em texto, áudio ou slides de cada item</small></div><div class="bars compact" id="dest-item"></div></div>
+      </div>
+      <p class="nota">Até 19/set o destaque tinha outro formato, em que o site registrava a abertura do bloco (“Abriu o destaque”). No formato atual, contamos os cliques nos textos, áudios e slides.</p>`;
+    barras('dest-tipo', d.porTipo);
+    barras('dest-item', d.porItem);
+    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Sem cliques nos materiais do destaque atual neste período.</p>';
   }
 
   function dispositivos(p) {
@@ -502,12 +551,13 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === P));
     $('resumo').innerHTML = resumo(p);
     kpis(p);
+    destaque(p);
     barras('secoes', p.secoes, { desc: i => DESC_SECOES[i.nome] });
     barras('canais', p.canais, { desc: i => i.explica });
     barras('fontes', p.fontes, { limite: 8 });
     barras('cidades', p.cidades, { limite: 8 });
     barras('paises', p.paises, { limite: 8 });
-    barras('acoes', p.acoes, { limite: 12 });
+    barras('acoes', p.acoes, { limite: 12, desc: i => DESC_ACOES[i.nome] });
     dispositivos(p);
     notaCanais(p);
     desenharLinha();

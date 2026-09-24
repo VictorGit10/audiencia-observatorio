@@ -83,6 +83,14 @@ const PAISES = { Brazil: 'Brasil', 'United States': 'Estados Unidos', India: 'Í
 const CIDADES = { Goiania: 'Goiânia', 'Sao Paulo': 'São Paulo', Brasilia: 'Brasília', Florianopolis: 'Florianópolis',
   Anapolis: 'Anápolis', 'Aparecida de Goiania': 'Aparecida de Goiânia', Uberlandia: 'Uberlândia', Belem: 'Belém',
   Vitoria: 'Vitória', Maceio: 'Maceió', 'Sao Luis': 'São Luís', Niteroi: 'Niterói', Cuiaba: 'Cuiabá' };
+const NAVEGADORES = { 'Android Webview': 'Dentro de apps (Android)', 'Android Runtime': 'Dentro de apps (Android)',
+  'Safari (in-app)': 'Dentro de apps (iPhone)', '(not set)': null };
+const SISTEMAS = { Macintosh: 'macOS', iOS: 'iOS (iPhone e iPad)', 'Chrome OS': 'ChromeOS', '(not set)': null };
+const IDIOMAS = { Portuguese: 'Português', English: 'Inglês', Spanish: 'Espanhol', French: 'Francês', German: 'Alemão',
+  Chinese: 'Chinês', Italian: 'Italiano', Japanese: 'Japonês', Russian: 'Russo', '(not set)': null };
+const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+// faixas do dia, no fuso da propriedade (Brasília)
+const faixaHora = h => (h < 6 ? 'Madrugada (0h–6h)' : h < 12 ? 'Manhã (6h–12h)' : h < 18 ? 'Tarde (12h–18h)' : 'Noite (18h–24h)');
 const DISPOSITIVOS = { mobile: 'Celular', desktop: 'Computador', tablet: 'Tablet', 'smart tv': 'TV' };
 const FONTES = { '(direct)': null, google: 'Google (busca)', bing: 'Bing (busca)', 'l.instagram.com': 'Instagram',
   'm.facebook.com': 'Facebook', 'lm.facebook.com': 'Facebook', 'jornal.ufg.br': 'Jornal UFG',
@@ -214,7 +222,7 @@ async function kpis(inicio, fim) {
 async function periodo(chave, inicio, fim, dest) {
   const temAnterior = chave !== 'tudo';
   const dias = diasEntre(inicio, fim) + 1;
-  const [atual, anterior, secoes, canais, fontes, cidades, paises, disp, eventos] = await Promise.all([
+  const [atual, anterior, secoes, canais, fontes, cidades, paises, disp, eventos, navs, sists, idiomas, diasSem, horas] = await Promise.all([
     kpis(inicio, fim),
     temAnterior && addDays(inicio, -dias) >= INICIO_COLETA ? kpis(addDays(inicio, -dias), addDays(inicio, -1)) : null,
     relatorio(inicio, fim, ['pageTitle'], ['screenPageViews']),
@@ -224,7 +232,13 @@ async function periodo(chave, inicio, fim, dest) {
     relatorio(inicio, fim, ['country'], ['activeUsers']),
     relatorio(inicio, fim, ['deviceCategory'], ['activeUsers']),
     relatorio(inicio, fim, ['eventName'], ['eventCount']),
+    relatorio(inicio, fim, ['browser'], ['activeUsers']),
+    relatorio(inicio, fim, ['operatingSystem'], ['activeUsers']),
+    relatorio(inicio, fim, ['language'], ['activeUsers']),
+    relatorio(inicio, fim, ['dayOfWeek'], ['sessions']),
+    relatorio(inicio, fim, ['hour'], ['sessions']),
   ]);
+  const porHora = Array.from({ length: 24 }, (_, h) => horas.find(l => Number(l.d[0]) === h)?.m[0] ?? 0);
   return {
     inicio, fim, dias,
     kpis: atual,
@@ -235,6 +249,14 @@ async function periodo(chave, inicio, fim, dest) {
     cidades: agrupar(cidades, c => (c === '(not set)' ? null : CIDADES[c] ?? c)).slice(0, 10),
     paises: agrupar(paises, p => (p === '(not set)' ? null : PAISES[p] ?? p)).slice(0, 8),
     dispositivos: agrupar(disp, d => DISPOSITIVOS[d] ?? d),
+    navegadores: agrupar(navs, n => (n in NAVEGADORES ? NAVEGADORES[n] : n)).slice(0, 6),
+    sistemas: agrupar(sists, n => (n in SISTEMAS ? SISTEMAS[n] : n)).slice(0, 6),
+    idiomas: agrupar(idiomas, n => (n in IDIOMAS ? IDIOMAS[n] : n)).slice(0, 5),
+    // dia da semana na ordem do calendário (segunda a domingo), não por tamanho
+    diasSemana: [1, 2, 3, 4, 5, 6, 0].map(d => ({ nome: DIAS_SEMANA[d], valor: diasSem.find(l => Number(l.d[0]) === d)?.m[0] ?? 0 })),
+    faixasHorario: ['Manhã (6h–12h)', 'Tarde (12h–18h)', 'Noite (18h–24h)', 'Madrugada (0h–6h)']
+      .map(nome => ({ nome, valor: porHora.reduce((s, v, h) => s + (faixaHora(h) === nome ? v : 0), 0) })),
+    horaPico: porHora.indexOf(Math.max(...porHora)),
     acoes: agrupar(eventos, e => ACOES[e] ?? null).slice(0, 12),
     destaque: await destaque(inicio, fim, eventos, dest),
   };

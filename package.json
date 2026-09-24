@@ -1,0 +1,13 @@
+{
+  "name": "audiencia-observatorio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Relatório de audiência do Observatório UFG-IA (GA4 → GitHub Pages)",
+  "scripts": {
+    "coletar": "node ga.mjs"
+  },
+  "dependencies": {
+    "@google-analytics/data": "^5.1.0"
+  }
+}

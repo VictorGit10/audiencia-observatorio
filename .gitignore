@@ -1,0 +1,3 @@
+# A chave da service account NUNCA entra no repositório (no GitHub ela fica em Settings → Secrets)
+credenciais.json
+node_modules/

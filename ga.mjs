@@ -60,6 +60,7 @@ const ACOES = {
   nav_panorama: 'Foi para o Panorama da IA generativa',
   select_type_tab: 'Trocou o tipo de conteúdo (artigos, notícias…)',
   nav_participate: 'Clicou em “Participe” (formulário)',
+  nav_audiencia: 'Foi para “Quem visita o Observatório”',
   nav_daily_news: 'Foi para “IA como notícia diária”',
   select_collection_theme: 'Escolheu um tema de coleção',
   nav_ecosystem: 'Foi para o Ecossistema UFG',

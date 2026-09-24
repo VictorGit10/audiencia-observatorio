@@ -100,16 +100,7 @@ const FONTES = { '(direct)': null, google: 'Google (busca)', bing: 'Bing (busca)
   'classroom.google.com': 'Google Sala de Aula', 'youtube.com': 'YouTube', 'm.youtube.com': 'YouTube' };
 
 // ── destaque da semana ──────────────────────────────────────────────────────
-// Eventos próprios do bloco (usados até 19/set/2026, quando o bloco mudou de formato)
-const EVENTOS_DESTAQUE = {
-  open_weekly_highlight: 'Abriu o destaque',
-  open_weekly_highlight_image: 'Ampliou a imagem',
-  open_weekly_highlight_podcast: 'Ouviu a análise em áudio',
-  download_weekly_highlight_podcast: 'Ouviu a análise em áudio',
-  toggle_featured_history: 'Consultou destaques anteriores',
-  open_featured_history: 'Consultou destaques anteriores',
-};
-// O formato novo leva a textos, áudios e slides fora do site: o GA registra esses cliques
+// O destaque leva a textos, áudios e slides fora do site: o GA registra esses cliques
 // automaticamente (evento "click" + linkUrl). Os links de cada edição são lidos do código do
 // site e acumulados em destaque-links.json, para que edições antigas continuem sendo contadas.
 const DESTAQUE_SRC = 'https://raw.githubusercontent.com/lapig-ufg/observatorio-ia/main/src/FeaturedDebate.tsx';
@@ -140,29 +131,22 @@ async function linksDoDestaque() {
   return { links, edicao };
 }
 
-async function destaque(inicio, fim, eventos, { links }) {
-  const urls = Object.keys(links);
-  const filtro = { orGroup: { expressions: [
-    { filter: { fieldName: 'eventName', inListFilter: { values: Object.keys(EVENTOS_DESTAQUE) } } },
-    ...(urls.length ? [{ andGroup: { expressions: [
-      { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
-      { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
-    ] } }] : []),
+// Só o tema atual: os links da edição que está no ar hoje
+async function destaque(inicio, fim, { links, edicao }) {
+  const urls = Object.keys(links).filter(u => links[u].edicao === edicao);
+  const filtroCliques = { andGroup: { expressions: [
+    { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
+    { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
   ] } };
   const [cliques, pessoas, viram] = await Promise.all([
-    urls.length ? relatorio(inicio, fim, ['linkUrl'], ['eventCount'], {
-      dimensionFilter: { andGroup: { expressions: [
-        { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
-        { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
-      ] } } }) : [],
-    relatorio(inicio, fim, [], ['activeUsers'], { dimensionFilter: filtro }),
-    // disparado pelo site quando o bloco aparece na tela (existe desde o fim de set/2026)
+    urls.length ? relatorio(inicio, fim, ['linkUrl'], ['eventCount'], { dimensionFilter: filtroCliques }) : [],
+    urls.length ? relatorio(inicio, fim, [], ['activeUsers'], { dimensionFilter: filtroCliques }) : [],
+    // o site dispara view_featured_highlight quando o destaque aparece na tela (desde 24/set/2026)
     relatorio(inicio, fim, [], ['activeUsers'], {
       dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'view_featured_highlight' } } } }),
   ]);
   const tipos = new Map(), itens = new Map();
   const soma = (m, k, v) => m.set(k, (m.get(k) ?? 0) + v);
-  for (const l of eventos) if (EVENTOS_DESTAQUE[l.d[0]]) soma(tipos, EVENTOS_DESTAQUE[l.d[0]], l.m[0]);
   for (const l of cliques) {
     const info = links[l.d[0]];
     soma(tipos, info.tipo, l.m[0]);
@@ -170,7 +154,7 @@ async function destaque(inicio, fim, eventos, { links }) {
   }
   const ordenar = m => [...m].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
   const porTipo = ordenar(tipos);
-  return { interacoes: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, viram: viram[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
+  return { cliques: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, viram: viram[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
 }
 
 // ── cliente ─────────────────────────────────────────────────────────────────
@@ -258,7 +242,7 @@ async function periodo(chave, inicio, fim, dest) {
       .map(nome => ({ nome, valor: porHora.reduce((s, v, h) => s + (faixaHora(h) === nome ? v : 0), 0) })),
     horaPico: porHora.indexOf(Math.max(...porHora)),
     acoes: agrupar(eventos, e => ACOES[e] ?? null).slice(0, 12),
-    destaque: await destaque(inicio, fim, eventos, dest),
+    destaque: await destaque(inicio, fim, dest),
   };
 }
 

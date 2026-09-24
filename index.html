@@ -170,7 +170,7 @@ section { margin-top: 20px; }
 .zoom .mini-kpis div { background: var(--card); border: 1px solid var(--line); }
 @media (max-width: 760px) { .zoom { padding: 18px; margin-left: -4px; margin-right: -4px; } }
 
-.mini-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.mini-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .mini-kpis div { background: var(--brand-soft); border-radius: 12px; padding: 16px; display: grid; gap: 2px; align-content: start; }
 .mini-kpis b { font-size: 32px; font-weight: 600; color: var(--brand); line-height: 1.1; }
 .mini-kpis span { font-size: 14px; font-weight: 600; }
@@ -463,19 +463,18 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   function destaque(p) {
     const d = p.destaque;
     if (D.edicaoDestaque) $('dest-titulo').textContent = `Tema atual: “${D.edicaoDestaque}”`;
-    if (!d || (!d.interacoes && !d.viram)) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque neste período.</p>'; return; }
+    if (!d || (!d.cliques && !d.viram)) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque neste período.</p>'; return; }
     const tile = (n, lbl, exp) => `<div><b class="num">${n}</b><span>${lbl}</span><small>${exp}</small></div>`;
     $('destaque').innerHTML = `
       <div class="mini-kpis">
-        ${tile(d.viram ? fmt(d.viram) : '—', 'viram o destaque', d.viram ? 'Pessoas que rolaram a página até o bloco aparecer na tela.' : 'Medição nova: começa a contar assim que o site do Observatório for atualizado.')}
-        ${tile(fmt(d.pessoas), 'clicaram em algo', 'Pessoas que abriram pelo menos um texto, áudio, slide ou imagem.')}
-        ${tile(fmt(d.interacoes), 'cliques no total', 'Somando todos os materiais — uma pessoa pode clicar em vários.')}
+        ${d.viram ? tile(fmt(d.viram), 'viram o destaque', 'Pessoas que rolaram a página até o destaque aparecer na tela.') : ''}
+        ${tile(fmt(d.pessoas), 'clicaram em algo', 'Pessoas que abriram pelo menos um texto, áudio ou slide.')}
+        ${tile(fmt(d.cliques), 'cliques no total', 'Somando todos os materiais — uma pessoa pode clicar em vários.')}
       </div>
       <div class="duo">
         <div><div class="sub-h">O que as pessoas fizeram<small>parte de cada tipo de clique no total</small></div><div class="bars compact" id="dest-tipo"></div></div>
         <div><div class="sub-h">Materiais mais procurados<small>cliques no texto, áudio ou slides de cada item</small></div><div class="bars compact" id="dest-item"></div></div>
-      </div>
-      <p class="nota">Até 19/set o destaque tinha outro formato, em que o site registrava a abertura do bloco (“Abriu o destaque”). No formato atual, contamos os cliques nos textos, áudios e slides.</p>`;
+      </div>`;
     barras('dest-tipo', d.porTipo, { unidade: 'cliques' });
     barras('dest-item', d.porItem, { unidade: 'cliques' });
     if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Sem cliques nos materiais do tema atual neste período.</p>';

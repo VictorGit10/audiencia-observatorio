@@ -25,14 +25,8 @@
   --down: #b94f3d;
   --shadow: 0 1px 2px rgba(23, 35, 31, .04), 0 4px 16px rgba(23, 35, 31, .05);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --bg: #111715; --card: #19211e; --ink: #eef3f0; --ink-2: #c1ccc6; --muted: #93a39b; --line: #2a3531;
-    --brand: #7fd0ae; --brand-soft: #1f2e28; --mark: #2fa37b; --mark-2: #3987e5; --mark-track: #232d29;
-    --up: #5fc79c; --down: #e98472; --shadow: none;
-  }
-}
+/* O tema claro é o padrão do site (independe do modo do sistema);
+   o escuro só entra quando o visitante clica no botão do topo. */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #111715; --card: #19211e; --ink: #eef3f0; --ink-2: #c1ccc6; --muted: #93a39b; --line: #2a3531;
@@ -60,6 +54,7 @@ header { display: grid; gap: 14px; margin-bottom: 28px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .theme-btn { border: 1px solid var(--line); background: var(--card); color: var(--ink-2); border-radius: 999px;
   padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.theme-btn svg { vertical-align: -2px; margin-right: 6px; }
 
 /* ── seletor de período ── */
 .periodo { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent);
@@ -76,7 +71,6 @@ header { display: grid; gap: 14px; margin-bottom: 28px; }
 }
 .seg button[aria-pressed="true"] { background: var(--brand); color: #fff; }
 :root[data-theme="dark"] .seg button[aria-pressed="true"] { color: #10201a; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .seg button[aria-pressed="true"] { color: #10201a; } }
 
 /* ── cartões ── */
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: var(--shadow); }
@@ -347,9 +341,13 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   // ── tema ──
+  // Claro é o padrão; o ícone mostra o tema atual (sol no claro, lua no escuro)
+  // e o texto mostra o tema que um clique leva.
   const root = document.documentElement;
-  const escuro = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  const rotuloTema = () => { $('tema').textContent = escuro() ? 'Tema claro' : 'Tema escuro'; };
+  const ICO_SOL = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+  const ICO_LUA = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const escuro = () => root.dataset.theme === 'dark';
+  const rotuloTema = () => { $('tema').innerHTML = escuro() ? ICO_LUA + 'Tema claro' : ICO_SOL + 'Tema escuro'; };
   try { const t = localStorage.getItem('obs-tema'); if (t) root.dataset.theme = t; } catch {}
   rotuloTema();
   $('tema').onclick = () => {

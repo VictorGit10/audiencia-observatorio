@@ -23,6 +23,7 @@
   --mark-track: #edf2ef;
   --up: #1a7a55;
   --down: #b94f3d;
+  --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --c6: #6b7a73;
   --shadow: 0 1px 2px rgba(23, 35, 31, .04), 0 4px 16px rgba(23, 35, 31, .05);
 }
 @media (prefers-color-scheme: dark) {
@@ -31,6 +32,7 @@
     --bg: #111715; --card: #19211e; --ink: #eef3f0; --ink-2: #c1ccc6; --muted: #93a39b; --line: #2a3531;
     --brand: #7fd0ae; --brand-soft: #1f2e28; --mark: #2fa37b; --mark-2: #3987e5; --mark-track: #232d29;
     --up: #5fc79c; --down: #e98472; --shadow: none;
+    --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #93a39b;
   }
 }
 :root[data-theme="dark"] {
@@ -38,6 +40,7 @@
   --bg: #111715; --card: #19211e; --ink: #eef3f0; --ink-2: #c1ccc6; --muted: #93a39b; --line: #2a3531;
   --brand: #7fd0ae; --brand-soft: #1f2e28; --mark: #2fa37b; --mark-2: #3987e5; --mark-track: #232d29;
   --up: #5fc79c; --down: #e98472; --shadow: none;
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #93a39b;
 }
 
 * { box-sizing: border-box; }
@@ -137,13 +140,14 @@ section { margin-top: 20px; }
 .bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline; }
 .bar .nome { font-weight: 500; font-size: 15px; }
 .bar .nome small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; line-height: 1.4; }
-.bar .v { font-size: 15px; font-weight: 600; text-align: right; }
-.bar .v small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.bar .v { display: grid; justify-items: end; line-height: 1.25; text-align: right; }
+.bar .v b { font-size: 16px; font-weight: 600; }
+.bar .v small { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .bar .trk { grid-column: 1 / -1; height: 10px; background: var(--mark-track); border-radius: 4px; overflow: hidden; }
 .bar .fill { height: 100%; background: var(--mark); border-radius: 0 4px 4px 0; min-width: 3px; transition: width .35s ease; }
 .bar:hover .fill { filter: brightness(1.12); }
 .bars.compact { gap: 10px; }
-.bars.compact .bar .nome, .bars.compact .bar .v { font-size: 14px; }
+.bars.compact .bar .nome, .bars.compact .bar .v b { font-size: 14px; }
 .bars.compact .trk { height: 8px; }
 
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -160,18 +164,28 @@ section { margin-top: 20px; }
 .callout { margin-top: 18px; padding: 14px 16px; border-left: 3px solid var(--mark); background: var(--brand-soft);
   border-radius: 0 10px 10px 0; font-size: 15px; color: var(--ink-2); }
 
-/* destaque da semana */
-.destaque { background: var(--brand-soft); border-radius: 14px; padding: 22px; margin-bottom: 26px; display: grid; gap: 18px; }
-.destaque-top { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
-.destaque-top h3 { margin: 4px 0 6px; font: 400 22px/1.25 Georgia, "Times New Roman", serif; }
-.destaque-top p { color: var(--ink-2); font-size: 14px; max-width: 520px; }
-.destaque-num { text-align: right; }
-.destaque-num b { display: block; font-size: 44px; line-height: 1; font-weight: 600; color: var(--brand); letter-spacing: -.02em; }
-.destaque-num span { font-size: 13px; color: var(--muted); }
-.destaque .duo { gap: 24px; }
-.destaque .trk { background: color-mix(in srgb, var(--card) 70%, transparent); }
-.destaque .nota { font-size: 13px; color: var(--muted); }
-@media (max-width: 560px) { .destaque-num { text-align: left; } }
+.nota { font-size: 13px; color: var(--muted); margin-top: 20px; }
+
+/* waffle das seções */
+.waffle-wrap { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
+.waffle { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; aspect-ratio: 1; }
+.waffle i { border-radius: 3px; background: var(--mark-track); }
+.waffle-leg { display: grid; gap: 16px; }
+.leg-item { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 12px; align-items: baseline; }
+.leg-item .sw { width: 14px; height: 14px; border-radius: 3px; align-self: center; }
+.leg-item .nome { font-weight: 500; }
+.leg-item .nome small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.leg-item .v { text-align: right; line-height: 1.25; }
+.leg-item .v b { display: block; font-size: 16px; }
+.leg-item .v small { color: var(--muted); font-size: 12px; white-space: nowrap; }
+@media (max-width: 760px) { .waffle-wrap { grid-template-columns: 1fr; } .waffle { max-width: 240px; } }
+
+.mini-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.mini-kpis div { background: var(--brand-soft); border-radius: 12px; padding: 16px; display: grid; gap: 2px; align-content: start; }
+.mini-kpis b { font-size: 32px; font-weight: 600; color: var(--brand); line-height: 1.1; }
+.mini-kpis span { font-size: 14px; font-weight: 600; }
+.mini-kpis small { font-size: 13px; color: var(--muted); }
+@media (max-width: 760px) { .mini-kpis { grid-template-columns: 1fr; } }
 
 /* glossário */
 details { border-top: 1px solid var(--line); padding: 14px 0; }
@@ -233,37 +247,45 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
 
   <section class="card">
     <div class="sec-head">
-      <span class="eyebrow">2 · Conteúdo</span>
-      <h2>O que as pessoas mais visitam</h2>
-      <p>O que desperta interesse no site: primeiro o destaque da semana, depois quantas vezes cada seção foi aberta.</p>
+      <span class="eyebrow">2 · Destaque da semana</span>
+      <h2 id="dest-titulo">Quem se interessou pelo destaque</h2>
+      <p>O destaque é o bloco editorial do Catálogo com a curadoria da vez: textos, análises em áudio e slides sobre um tema. Aqui medimos quem viu o bloco e quem clicou nos materiais.</p>
     </div>
-    <div class="destaque" id="destaque"></div>
-    <div class="sub-h">Seções do site<small>páginas vistas — uma mesma pessoa pode abrir várias seções, ou a mesma várias vezes</small></div>
-    <div class="bars" id="secoes"></div>
+    <div id="destaque"></div>
   </section>
 
   <section class="card">
     <div class="sec-head">
-      <span class="eyebrow">3 · Origem</span>
+      <span class="eyebrow">3 · Seções do site</span>
+      <h2>Quais partes do site são mais abertas</h2>
+      <p>Cada vez que alguém abre uma seção conta como uma página vista. Para comparar, imagine 100 páginas abertas: cada quadradinho abaixo é uma delas.</p>
+    </div>
+    <div class="waffle-wrap"><div class="waffle" id="waffle" role="img"></div><div class="waffle-leg" id="secoes"></div></div>
+    <div class="callout"><b>Por que o Catálogo domina?</b> Ele é a página de entrada: todo mundo que chega ao site cai nele primeiro, e o destaque da semana fica dentro dele. As outras seções dependem de a pessoa clicar no menu para chegar até elas.</div>
+  </section>
+
+  <section class="card">
+    <div class="sec-head">
+      <span class="eyebrow">4 · Origem</span>
       <h2>Como as pessoas chegam até o site</h2>
       <p>O Google identifica o caminho de cada visita: se a pessoa digitou o endereço, clicou num link em outro site, veio de uma busca ou de uma rede social.</p>
     </div>
     <div class="duo">
-      <div><div class="sub-h">Caminho de entrada<small>número de visitas</small></div><div class="bars" id="canais"></div></div>
-      <div><div class="sub-h">Sites que mais trouxeram gente<small>visitas vindas de cada site</small></div><div class="bars compact" id="fontes"></div></div>
+      <div><div class="sub-h">Caminho de entrada<small>de cada 100 visitas, quantas vieram por cada caminho</small></div><div class="bars" id="canais"></div></div>
+      <div><div class="sub-h">Sites que mais trouxeram gente<small>parte das visitas trazidas por links em outros sites</small></div><div class="bars compact" id="fontes"></div></div>
     </div>
     <div class="callout" id="nota-canais"></div>
   </section>
 
   <section class="card">
     <div class="sec-head">
-      <span class="eyebrow">4 · Público</span>
+      <span class="eyebrow">5 · Público</span>
       <h2>Onde estão os visitantes</h2>
       <p>Localização aproximada, estimada pelo Google a partir da conexão de internet — serve para ver tendências, não pessoas.</p>
     </div>
     <div class="duo">
-      <div><div class="sub-h">Cidades<small>visitantes</small></div><div class="bars compact" id="cidades"></div></div>
-      <div><div class="sub-h">Países<small>visitantes</small></div><div class="bars compact" id="paises"></div></div>
+      <div><div class="sub-h">Cidades<small>parte dos visitantes com cidade identificada</small></div><div class="bars compact" id="cidades"></div></div>
+      <div><div class="sub-h">Países<small>parte dos visitantes em cada país</small></div><div class="bars compact" id="paises"></div></div>
     </div>
     <div style="margin-top:28px">
       <div class="sub-h">Celular ou computador?<small>aparelho usado pelos visitantes</small></div>
@@ -274,7 +296,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
 
   <section class="card">
     <div class="sec-head">
-      <span class="eyebrow">5 · Interação</span>
+      <span class="eyebrow">6 · Interação</span>
       <h2>O que as pessoas fazem no site</h2>
       <p>Cliques que o site registra de propósito para entender o uso: filtros, artigos abertos, navegação entre seções. Mostra o que desperta interesse além de simplesmente abrir a página.</p>
     </div>
@@ -411,41 +433,63 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   }
 
   // ── barras ──
-  function barras(el, itens, { desc, unidade = '', total, limite = 10 } = {}) {
+  // A barra inteira = 100% do total; o trecho pintado é a fatia do item (o mesmo % escrito ao lado)
+  const pctTxt = (v, t) => { const x = t ? 100 * v / t : 0; return x > 0 && x < 1 ? '<1%' : `${Math.round(x)}%`; };
+  function barras(el, itens, { desc, unidade = '', limite = 10 } = {}) {
     const lista = itens.slice(0, limite);
     if (!lista.length) { $(el).innerHTML = '<p class="vazio">Sem dados neste período.</p>'; return; }
-    const max = Math.max(...lista.map(i => i.valor));
-    const tot = total ?? itens.reduce((s, i) => s + i.valor, 0);
+    const tot = itens.reduce((s, i) => s + i.valor, 0);
     $(el).innerHTML = lista.map(i => {
-      const d = desc?.(i);
-      return `<div class="bar" title="${esc(i.rotulo ?? i.nome)}: ${fmt(i.valor)}${unidade} (${pct(i.valor, tot)}% do total)">
-        <span class="nome">${esc(i.rotulo ?? i.nome)}${d ? `<small>${esc(d)}</small>` : ''}</span>
-        <span class="v num">${fmt(i.valor)}<small>${pct(i.valor, tot)}%</small></span>
-        <div class="trk"><div class="fill" style="width:${(100 * i.valor / max).toFixed(1)}%"></div></div>
+      const d = desc?.(i), nome = i.rotulo ?? i.nome;
+      return `<div class="bar" title="${esc(nome)}: ${fmt(i.valor)} ${unidade} — ${pctTxt(i.valor, tot)} do total">
+        <span class="nome">${esc(nome)}${d ? `<small>${esc(d)}</small>` : ''}</span>
+        <span class="v num"><b>${pctTxt(i.valor, tot)}</b><small>${fmt(i.valor)} ${unidade}</small></span>
+        <div class="trk"><div class="fill" style="width:${(100 * i.valor / (tot || 1)).toFixed(1)}%"></div></div>
       </div>`;
     }).join('');
   }
 
+  // 100 quadradinhos repartidos pelo método do maior resto
+  function waffle(p) {
+    const cores = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)'];
+    let itens = p.secoes.slice(0, 5);
+    const resto = p.secoes.slice(5).reduce((s, i) => s + i.valor, 0);
+    if (resto) itens = [...itens, { nome: 'Outras', valor: resto }];
+    const tot = itens.reduce((s, i) => s + i.valor, 0);
+    if (!tot) { $('waffle').innerHTML = ''; $('secoes').innerHTML = '<p class="vazio">Sem dados neste período.</p>'; return; }
+    const brutos = itens.map(i => 100 * i.valor / tot);
+    const q = brutos.map(Math.floor);
+    let falta = 100 - q.reduce((a, b) => a + b, 0);
+    brutos.map((b, k) => [b - q[k], k]).sort((a, b) => b[0] - a[0]).forEach(([, k]) => { if (falta-- > 0) q[k]++; });
+    const cor = k => cores[k] ?? 'var(--c6)';
+    $('waffle').innerHTML = itens.flatMap((i, k) => Array.from({ length: q[k] }, () => `<i style="background:${cor(k)}" title="${esc(i.nome)}"></i>`)).join('');
+    $('waffle').setAttribute('aria-label', itens.map((i, k) => `${i.nome}: ${q[k]} de cada 100`).join('; '));
+    $('secoes').innerHTML = itens.map((i, k) => `<div class="leg-item">
+        <span class="sw" style="background:${cor(k)}"></span>
+        <span class="nome">${esc(i.nome)}${DESC_SECOES[i.nome] ? `<small>${esc(DESC_SECOES[i.nome])}</small>` : ''}</span>
+        <span class="v num"><b>${q[k] ? `${q[k]} em 100` : 'menos de 1 em 100'}</b><small>${fmt(i.valor)} páginas vistas</small></span>
+      </div>`).join('');
+  }
+
   function destaque(p) {
     const d = p.destaque;
-    if (!d || !d.interacoes) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque da semana neste período.</p>'; return; }
+    if (D.edicaoDestaque) $('dest-titulo').textContent = `Tema atual: “${D.edicaoDestaque}”`;
+    if (!d || (!d.interacoes && !d.viram)) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque neste período.</p>'; return; }
+    const tile = (n, lbl, exp) => `<div><b class="num">${n}</b><span>${lbl}</span><small>${exp}</small></div>`;
     $('destaque').innerHTML = `
-      <div class="destaque-top">
-        <div>
-          <span class="eyebrow">Destaque da semana</span>
-          <h3>${D.edicaoDestaque ? `Agora: “${esc(D.edicaoDestaque)}”` : 'Bloco editorial do catálogo'}</h3>
-          <p>O bloco no topo do Catálogo, com a curadoria da vez: textos, análises em áudio e slides. Contamos cada clique nesses materiais.</p>
-        </div>
-        <div class="destaque-num"><b class="num">${fmt(d.pessoas)}</b><span>pessoas interagiram<br>${fmt(d.interacoes)} cliques no total</span></div>
+      <div class="mini-kpis">
+        ${tile(d.viram ? fmt(d.viram) : '—', 'viram o destaque', d.viram ? 'Pessoas que rolaram a página até o bloco aparecer na tela.' : 'Medição nova: começa a contar assim que o site do Observatório for atualizado.')}
+        ${tile(fmt(d.pessoas), 'clicaram em algo', 'Pessoas que abriram pelo menos um texto, áudio, slide ou imagem.')}
+        ${tile(fmt(d.interacoes), 'cliques no total', 'Somando todos os materiais — uma pessoa pode clicar em vários.')}
       </div>
       <div class="duo">
-        <div><div class="sub-h">O que fizeram<small>cliques</small></div><div class="bars compact" id="dest-tipo"></div></div>
-        <div><div class="sub-h">Materiais mais procurados<small>cliques em texto, áudio ou slides de cada item</small></div><div class="bars compact" id="dest-item"></div></div>
+        <div><div class="sub-h">O que as pessoas fizeram<small>parte de cada tipo de clique no total</small></div><div class="bars compact" id="dest-tipo"></div></div>
+        <div><div class="sub-h">Materiais mais procurados<small>cliques no texto, áudio ou slides de cada item</small></div><div class="bars compact" id="dest-item"></div></div>
       </div>
       <p class="nota">Até 19/set o destaque tinha outro formato, em que o site registrava a abertura do bloco (“Abriu o destaque”). No formato atual, contamos os cliques nos textos, áudios e slides.</p>`;
-    barras('dest-tipo', d.porTipo);
-    barras('dest-item', d.porItem);
-    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Sem cliques nos materiais do destaque atual neste período.</p>';
+    barras('dest-tipo', d.porTipo, { unidade: 'cliques' });
+    barras('dest-item', d.porItem, { unidade: 'cliques' });
+    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Sem cliques nos materiais do tema atual neste período.</p>';
   }
 
   function dispositivos(p) {
@@ -552,12 +596,12 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     $('resumo').innerHTML = resumo(p);
     kpis(p);
     destaque(p);
-    barras('secoes', p.secoes, { desc: i => DESC_SECOES[i.nome] });
-    barras('canais', p.canais, { desc: i => i.explica });
-    barras('fontes', p.fontes, { limite: 8 });
-    barras('cidades', p.cidades, { limite: 8 });
-    barras('paises', p.paises, { limite: 8 });
-    barras('acoes', p.acoes, { limite: 12, desc: i => DESC_ACOES[i.nome] });
+    waffle(p);
+    barras('canais', p.canais, { desc: i => i.explica, unidade: 'visitas' });
+    barras('fontes', p.fontes, { limite: 8, unidade: 'visitas' });
+    barras('cidades', p.cidades, { limite: 8, unidade: 'visitantes' });
+    barras('paises', p.paises, { limite: 8, unidade: 'visitantes' });
+    barras('acoes', p.acoes, { limite: 12, desc: i => DESC_ACOES[i.nome], unidade: 'cliques' });
     dispositivos(p);
     notaCanais(p);
     desenharLinha();

@@ -141,13 +141,16 @@ async function destaque(inicio, fim, eventos, { links }) {
       { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
     ] } }] : []),
   ] } };
-  const [cliques, pessoas] = await Promise.all([
+  const [cliques, pessoas, viram] = await Promise.all([
     urls.length ? relatorio(inicio, fim, ['linkUrl'], ['eventCount'], {
       dimensionFilter: { andGroup: { expressions: [
         { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
         { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
       ] } } }) : [],
     relatorio(inicio, fim, [], ['activeUsers'], { dimensionFilter: filtro }),
+    // disparado pelo site quando o bloco aparece na tela (existe desde o fim de set/2026)
+    relatorio(inicio, fim, [], ['activeUsers'], {
+      dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'view_featured_highlight' } } } }),
   ]);
   const tipos = new Map(), itens = new Map();
   const soma = (m, k, v) => m.set(k, (m.get(k) ?? 0) + v);
@@ -159,7 +162,7 @@ async function destaque(inicio, fim, eventos, { links }) {
   }
   const ordenar = m => [...m].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
   const porTipo = ordenar(tipos);
-  return { interacoes: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
+  return { interacoes: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, viram: viram[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
 }
 
 // ── cliente ─────────────────────────────────────────────────────────────────

@@ -165,18 +165,23 @@
   "edicao": "Assinaturas invisíveis: até onde resistem as marcas d’água da IA?"
  },
  "https://drive.google.com/file/d/180BdIVjxxTz5s9gLMt36JAg8AS98yikV/view": {
-  "titulo": "Link no texto de apresentação",
-  "tipo": "Leu o texto original",
+  "titulo": "Da norma à responsabilidade científica",
+  "tipo": "Abriu o documento",
   "edicao": "IA na publicação científica: regras diversas, responsabilidade humana"
  },
  "https://drive.google.com/file/d/1WIHOYWwecUKKJScm4CiileJJz18qVNe9/view": {
-  "titulo": "Link no texto de apresentação",
-  "tipo": "Leu o texto original",
+  "titulo": "O caos da IA na publicação científica",
+  "tipo": "Ouviu a análise em áudio",
   "edicao": "IA na publicação científica: regras diversas, responsabilidade humana"
  },
  "https://drive.google.com/file/d/1-db96LJfCQAyWV8c_frRAtkeulupacHg/view": {
-  "titulo": "Link no texto de apresentação",
-  "tipo": "Leu o texto original",
+  "titulo": "Governança de IA na Ciência",
+  "tipo": "Viu a apresentação",
+  "edicao": "IA na publicação científica: regras diversas, responsabilidade humana"
+ },
+ "#levantamentos/politicas-ia": {
+  "titulo": "Políticas de IA na publicação científica",
+  "tipo": "Explorou o levantamento",
   "edicao": "IA na publicação científica: regras diversas, responsabilidade humana"
  }
 }

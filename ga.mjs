@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { exec } from 'node:child_process';
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
+import { sectionLabel, actionLabel, validateManifest, mergeMaterials, readReport } from './analytics-model.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CI = !!process.env.CI;
@@ -30,18 +31,6 @@ const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - new Date(a 
 const ONTEM = addDays(isoBR(new Date()), -1);
 
 // ── traduções: o que cada coisa do GA significa para quem lê ────────────────
-const SECOES = {
-  'Catálogo': 'Catálogo de publicações',
-  'UFG-AI Observatory — English': 'Catálogo de publicações',
-  'Panorama da IA generativa': 'Panorama da IA generativa',
-  'Global Generative AI Landscape': 'Panorama da IA generativa',
-  'IA como notícia diária': 'IA como notícia diária',
-  'Ecossistema UFG': 'Ecossistema de IA da UFG',
-  'UFG AI Ecosystem': 'Ecossistema de IA da UFG',
-  'Atlas Semântico': 'Atlas semântico',
-  'Observatório UFG-IA | LAPIG/UFG': 'Página de entrada (site do LAPIG)',
-};
-
 const CANAIS = {
   'Direct': ['Acesso direto', 'Digitou o endereço, usou um favorito ou abriu um link de WhatsApp/e-mail (que não informam a origem).'],
   'Referral': ['Links em outros sites', 'Clicou num link publicado em outro site — jornal da UFG, SIGAA, site do LAPIG etc.'],
@@ -103,80 +92,75 @@ const FONTES = { '(direct)': null, google: 'Google (busca)', bing: 'Bing (busca)
 // ── destaque da semana ──────────────────────────────────────────────────────
 // O destaque leva a textos, áudios e slides fora do site: o GA registra esses cliques
 // automaticamente (evento "click" + linkUrl). Os links de cada edição são lidos do código do
-// site e acumulados em destaque-links.json, para que edições antigas continuem sendo contadas.
-const DESTAQUE_SRC = 'https://raw.githubusercontent.com/lapig-ufg/observatorio-ia/main/src/FeaturedDebate.tsx';
+// site por um manifesto publicado e acumulados em destaque-links.json para preservar o histórico.
+const DESTAQUE_URL = 'https://lapig-ufg.github.io/observatorio-ia/analytics-manifest.json';
 const DESTAQUE_ARQ = join(HERE, 'destaque-links.json');
+const MANIFEST_ARQ = join(HERE, 'destaque-atual.json');
 
 async function linksDoDestaque() {
   let links = {};
   try { links = JSON.parse(readFileSync(DESTAQUE_ARQ, 'utf8')); } catch {}
-  let edicao = null;
+  let manifest;
+  let cache = false;
   try {
-    const tsx = await (await fetch(DESTAQUE_SRC)).text();
-    const fontes = Object.fromEntries([...tsx.matchAll(/^\s*(\w+):\s*"(https?:\/\/[^"]+)"/gm)].map(m => [m[1], m[2]]));
-    const ini = tsx.search(/\bpt:\s*\{/), fim = tsx.search(/\ben:\s*\{/);
-    const pt = tsx.slice(ini, fim > ini ? fim : undefined);
-    edicao = pt.match(/title:\s*"([^"]+)"/)?.[1] ?? null;
-    const add = (chave, titulo, tipo) => { const u = fontes[chave]; if (u) links[u] = { titulo, tipo, edicao }; };
-    for (const [card, titulo] of pt.matchAll(/\{[^{}]*?title:\s*"([^"]+)"[^{}]*\}/g)) {
-      add(card.match(/href:\s*sources\.(\w+)/)?.[1], titulo, 'Leu o texto original');
-      add(card.match(/slides:\s*sources\.(\w+)/)?.[1], titulo, 'Viu os slides');
-      for (const [, k] of (card.match(/audios:\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/sources\.(\w+)/g)) add(k, titulo, 'Ouviu a análise em áudio');
-    }
-    // links soltos no texto de apresentação
-    for (const u of Object.values(fontes)) if (!links[u]) links[u] = { titulo: 'Link no texto de apresentação', tipo: 'Leu o texto original', edicao };
-    writeFileSync(DESTAQUE_ARQ, JSON.stringify(links, null, 1) + '\n');
-  } catch (e) {
-    console.warn(`  ⚠ não consegui ler o destaque atual do site (${e.message}) — uso a lista salva`);
+    const response = await fetch(DESTAQUE_URL, {signal:AbortSignal.timeout(20000),cache:'no-store'});
+    if (!response.ok) throw Error(`HTTP ${response.status}`);
+    // Schema errors fail the collection: never replace correct data with a silent zero.
+    manifest = await response.json();
+  } catch (error) {
+    if (!existsSync(MANIFEST_ARQ)) throw error;
+    manifest = JSON.parse(readFileSync(MANIFEST_ARQ,'utf8'));
+    cache = true;
+    console.warn(`  ⚠ destaque: usando última edição salva (${error.message})`);
   }
-  return { links, edicao };
+  manifest = validateManifest(manifest);
+  links = mergeMaterials(links, manifest);
+  writeFileSync(DESTAQUE_ARQ, JSON.stringify(links, null, 1) + '\n');
+  writeFileSync(MANIFEST_ARQ, JSON.stringify(manifest, null, 2) + '\n');
+  return {links,edicao:manifest.edition,manifest,cache};
 }
 
 // Só o tema atual: os links da edição que está no ar hoje
-async function destaque(inicio, fim, { links, edicao }) {
-  const urls = Object.keys(links).filter(u => links[u].edicao === edicao);
-  const filtroCliques = { andGroup: { expressions: [
-    { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'click' } } },
-    { filter: { fieldName: 'linkUrl', inListFilter: { values: urls } } },
-  ] } };
-  const [cliques, pessoas, viram] = await Promise.all([
-    urls.length ? relatorio(inicio, fim, ['linkUrl'], ['eventCount'], { dimensionFilter: filtroCliques }) : [],
-    urls.length ? relatorio(inicio, fim, [], ['activeUsers'], { dimensionFilter: filtroCliques }) : [],
-    // o site dispara view_featured_highlight quando o destaque aparece na tela (desde 24/set/2026)
-    relatorio(inicio, fim, [], ['activeUsers'], {
-      dimensionFilter: { filter: { fieldName: 'eventName', stringFilter: { matchType: 'EXACT', value: 'view_featured_highlight' } } } }),
+async function destaque(inicio, fim, {links, edicao, manifest}) {
+  // Only days when the current edition was available belong in its readership.
+  inicio = inicio < manifest.startsOn ? manifest.startsOn : inicio;
+  const empty = {cliques:0,pessoas:0,viram:0,porTipo:[],porItem:[],levantamento:0,levantamentoDesde:'2026-10-19'};
+  if (inicio > fim) return empty;
+  const urls = manifest.materials.filter(x=>x.href.startsWith('https://')).map(x=>x.href);
+  const external = {andGroup:{expressions:[
+    {filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'click'}}},
+    {filter:{fieldName:'linkUrl',inListFilter:{values:urls}}},
+  ]}};
+  const internal = {filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'open_featured_survey'}}};
+  const combined = urls.length ? {orGroup:{expressions:[external,internal]}} : internal;
+  const [cliques,pessoas,viram,levantamento] = await Promise.all([
+    urls.length ? relatorio(inicio,fim,['linkUrl'],['eventCount'],{dimensionFilter:external}) : [],
+    relatorio(inicio,fim,[],['activeUsers'],{dimensionFilter:combined}),
+    relatorio(inicio,fim,[],['activeUsers'],{dimensionFilter:{filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'view_featured_highlight'}}}}),
+    manifest.materials.some(x=>x.kind==='survey') ? relatorio(inicio,fim,[],['eventCount'],{dimensionFilter:internal}) : [],
   ]);
   const tipos = new Map(), itens = new Map();
-  const soma = (m, k, v) => m.set(k, (m.get(k) ?? 0) + v);
-  for (const l of cliques) {
-    const info = links[l.d[0]];
-    soma(tipos, info.tipo, l.m[0]);
-    if (info.titulo !== 'Link no texto de apresentação') soma(itens, info.titulo, l.m[0]);
+  const soma = (map,key,value)=>map.set(key,(map.get(key)??0)+value);
+  for (const row of cliques) {
+    const info = links[row.d[0]];
+    soma(tipos,info.tipo,row.m[0]);soma(itens,info.titulo,row.m[0]);
   }
-  const ordenar = m => [...m].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => b.valor - a.valor);
-  const porTipo = ordenar(tipos);
-  return { cliques: porTipo.reduce((s, x) => s + x.valor, 0), pessoas: pessoas[0]?.m[0] ?? 0, viram: viram[0]?.m[0] ?? 0, porTipo, porItem: ordenar(itens).slice(0, 6) };
+  const internalCount=levantamento[0]?.m[0]??0;
+  const survey=manifest.materials.find(x=>x.kind==='survey');
+  if(survey && internalCount) {soma(tipos,'Explorou o levantamento',internalCount);soma(itens,survey.title,internalCount);}
+  const ordenar=map=>[...map].map(([nome,valor])=>({nome,valor})).sort((a,b)=>b.valor-a.valor);
+  const porTipo=ordenar(tipos);
+  return {...empty,cliques:porTipo.reduce((sum,x)=>sum+x.valor,0),pessoas:pessoas[0]?.m[0]??0,viram:viram[0]?.m[0]??0,porTipo,porItem:ordenar(itens),levantamento:internalCount};
 }
 
 // ── cliente ─────────────────────────────────────────────────────────────────
-const credPath = join(HERE, 'credenciais.json');
+const credPath = process.env.GA_KEY_FILE || join(HERE, 'credenciais.json');
 const client = process.env.GA_CREDENTIALS
   ? new BetaAnalyticsDataClient({ credentials: JSON.parse(process.env.GA_CREDENTIALS) })
   : new BetaAnalyticsDataClient({ keyFilename: credPath });
 
-async function relatorio(inicio, fim, dims, mets, extra = {}) {
-  const [r] = await client.runReport({
-    property: PROPERTY,
-    dateRanges: [{ startDate: inicio, endDate: fim }],
-    dimensions: dims.map(name => ({ name })),
-    metrics: mets.map(name => ({ name })),
-    limit: 250,
-    ...extra,
-  });
-  return (r.rows ?? []).map(x => ({
-    d: (x.dimensionValues ?? []).map(v => v.value),
-    m: (x.metricValues ?? []).map(v => Number(v.value)),
-  }));
+function relatorio(inicio, fim, dims, mets, extra = {}) {
+  return readReport(client, PROPERTY, cfg.observatorio.hostName, inicio, fim, dims, mets, extra);
 }
 
 // soma linhas que caem no mesmo rótulo depois da tradução
@@ -228,7 +212,7 @@ async function periodo(chave, inicio, fim, dest) {
     inicio, fim, dias,
     kpis: atual,
     anterior,
-    secoes: agrupar(secoes, t => SECOES[t] ?? t),
+    secoes: agrupar(secoes, sectionLabel),
     canais: agrupar(canais, c => c).map(x => ({ ...x, rotulo: CANAIS[x.nome]?.[0] ?? x.nome, explica: CANAIS[x.nome]?.[1] ?? '' })),
     fontes: agrupar(fontes, f => (f in FONTES ? FONTES[f] : f)).slice(0, 10),
     cidades: agrupar(cidades, c => (c === '(not set)' ? null : CIDADES[c] ?? c)).slice(0, 10),
@@ -242,7 +226,7 @@ async function periodo(chave, inicio, fim, dest) {
     faixasHorario: ['Manhã (6h–12h)', 'Tarde (12h–18h)', 'Noite (18h–24h)', 'Madrugada (0h–6h)']
       .map(nome => ({ nome, valor: porHora.reduce((s, v, h) => s + (faixaHora(h) === nome ? v : 0), 0) })),
     horaPico: porHora.indexOf(Math.max(...porHora)),
-    acoes: agrupar(eventos, e => ACOES[e] ?? null).slice(0, 12),
+    acoes: agrupar(eventos, e => actionLabel(e, ACOES)),
     destaque: await destaque(inicio, fim, dest),
   };
 }
@@ -264,7 +248,7 @@ async function coletar() {
     const m = mapa.get(d.replaceAll('-', '')) ?? [0, 0];
     diario.push({ data: d, visitantes: m[0], paginas: m[1] });
   }
-  return { geradoEm: new Date().toISOString(), inicioColeta: INICIO_COLETA, ate: ONTEM, edicaoDestaque: dest.edicao, periodos, diario };
+  return { geradoEm: new Date().toISOString(), inicioColeta: INICIO_COLETA, ate: ONTEM, edicaoDestaque: dest.edicao, escopo: { hostName: cfg.observatorio.hostName, excluiTestesLocais: true }, destaqueEmCache: dest.cache, periodos, diario };
 }
 
 try {

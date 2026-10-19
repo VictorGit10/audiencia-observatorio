@@ -3,6 +3,7 @@
     "propertyId": "546230541",
     "nome": "Observatório UFG-IA",
     "measurementId": "G-2R8KZB3YJ7",
-    "inicioColeta": "2026-07-20"
+    "inicioColeta": "2026-07-20",
+    "hostName": "lapig-ufg.github.io"
   }
 }

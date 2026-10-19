@@ -5,9 +5,14 @@
   "type": "module",
   "description": "Relatório de audiência do Observatório UFG-IA (GA4 → GitHub Pages)",
   "scripts": {
-    "coletar": "node ga.mjs"
+    "coletar": "node ga.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node scripts/smoke-local.mjs"
   },
   "dependencies": {
     "@google-analytics/data": "^5.1.0"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
   }
 }

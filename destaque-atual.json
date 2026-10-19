@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "edition": "IA na publicação científica: regras diversas, responsabilidade humana",
+  "startsOn": "2026-10-17",
+  "editionAliases": [
+    "AI in scientific publishing: different rules, human responsibility"
+  ],
+  "materials": [
+    {
+      "title": "Políticas de IA na publicação científica",
+      "kind": "survey",
+      "href": "#levantamentos/politicas-ia"
+    },
+    {
+      "title": "Da norma à responsabilidade científica",
+      "kind": "document",
+      "href": "https://drive.google.com/file/d/180BdIVjxxTz5s9gLMt36JAg8AS98yikV/view"
+    },
+    {
+      "title": "O caos da IA na publicação científica",
+      "kind": "audio",
+      "href": "https://drive.google.com/file/d/1WIHOYWwecUKKJScm4CiileJJz18qVNe9/view"
+    },
+    {
+      "title": "Governança de IA na Ciência",
+      "kind": "presentation",
+      "href": "https://drive.google.com/file/d/1-db96LJfCQAyWV8c_frRAtkeulupacHg/view"
+    }
+  ]
+}

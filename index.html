@@ -233,16 +233,16 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     <div class="sec-head">
       <span class="eyebrow">2 · Conteúdo</span>
       <h2>O que as pessoas mais abrem</h2>
-      <p>Primeiro, as seções do site. Depois, um olhar de perto no destaque da semana, a curadoria que fica dentro do Catálogo.</p>
+      <p>Primeiro, as seções do site. Depois, um olhar de perto no destaque da semana, a curadoria apresentada na página inicial.</p>
     </div>
     <div class="sub-h">Seções do site<small>de cada 100 páginas abertas, quantas foram de cada seção</small></div>
     <div class="bars" id="secoes"></div>
-    <p class="nota">O Catálogo é a página de entrada: todo mundo que chega ao site cai nele primeiro. As outras seções dependem de a pessoa clicar no menu.</p>
+    <p class="nota">A página inicial apresenta o portal. O Acervo reúne as publicações; o menu leva ao Panorama, aos levantamentos, às notícias e às demais seções. Nomes antigos e versões em inglês são agrupados na mesma seção.</p>
 
     <div class="zoom">
-      <span class="eyebrow">Dentro do Catálogo · Destaque da semana</span>
+      <span class="eyebrow">Na página inicial · Destaque da semana</span>
       <h3 id="dest-titulo">Destaque da semana</h3>
-      <p class="zoom-sub">A curadoria do momento: textos, análises em áudio e slides sobre um tema. Contamos quem viu e quem clicou nos materiais.</p>
+      <p class="zoom-sub">A curadoria do momento: documentos, áudios, apresentações e levantamentos sobre um tema. Contamos quem viu e quem clicou nos materiais.</p>
       <div id="destaque"></div>
     </div>
   </section>
@@ -304,7 +304,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
       <h2>O que as pessoas fazem no site</h2>
       <p>Cliques que o site registra de propósito para entender o uso: filtros, artigos abertos, navegação entre seções. Mostra o que desperta interesse além de simplesmente abrir a página.</p>
     </div>
-    <div class="bars compact" id="acoes"></div>
+    <div class="bars compact" id="acoes"></div><button class="tbl-toggle" type="button" id="todas-acoes" aria-expanded="false">Ver todas as interações</button>
   </section>
 
   <section class="card">
@@ -323,7 +323,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
 
   <footer>
     <span id="rodape"></span>
-    <span>Fonte: Google Analytics 4 do Observatório UFG-IA · O dia de hoje fica de fora porque ainda não terminou.</span>
+    <span>Fonte: Google Analytics 4 do Observatório UFG-IA · Apenas acessos ao domínio público; testes locais excluídos. O dia de hoje fica de fora porque ainda não terminou. Os dias recentes podem receber ajustes do Google.</span>
   </footer>
 </div>
 
@@ -361,16 +361,20 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   const NOMES_PERIODO = { 7: 'últimos 7 dias', 30: 'últimos 30 dias', tudo: 'desde o lançamento' };
   const ANTERIOR = { 7: 'nos 7 dias anteriores', 30: 'nos 30 dias anteriores' };
   const DESC_SECOES = {
-    'Catálogo de publicações': 'Página principal: artigos, notícias e materiais sobre IA, com filtros.',
+    'Acervo de publicações': 'Coleções de artigos, documentos, áudios, apresentações e vídeos, com busca e filtros.',
+    'Página inicial': 'Apresentação do portal, novidades e destaque da semana.',
+    'Leituras em IA': 'Artigos e ensaios publicados no Medium.',
+    'Políticas de IA na publicação científica': 'Levantamento de políticas, fontes, comparações e downloads.',
+    'Aula: Por dentro da IA': 'Aula interativa sobre inferência e geração de texto.',
     'Panorama da IA generativa': 'Régua e guia dos modelos de IA generativa.',
     'IA como notícia diária': 'Notícias sobre IA publicadas na imprensa, dia a dia.',
     'Ecossistema de IA da UFG': 'Grupos, projetos e iniciativas de IA da universidade.',
     'Atlas semântico': 'Mapa interativo dos temas das publicações.',
-    'Página de entrada (site do LAPIG)': 'Endereço do Observatório dentro do site do LAPIG.',
+    'Sobre o Observatório': 'Equipe, propósito e informações do projeto.',
   };
 
   const DESC_ACOES = {
-    'Clicou em “Carregar mais itens” no catálogo': 'O catálogo mostra 15 publicações por vez. Cada clique no botão do fim da lista revela mais 15 — sinal de gente explorando o acervo além da primeira tela.',
+    'Clicou em “Carregar mais itens” no catálogo': 'Revela mais publicações no Acervo.',
     'Filtrou o catálogo por categoria': 'Usou os botões de categoria para ver só um tipo de publicação.',
     'Foi para o Panorama da IA generativa': 'Clicou no menu para abrir o Panorama (régua e guia dos modelos).',
     'Trocou o tipo de conteúdo (artigos, notícias…)': 'Alternou entre as abas de tipo de conteúdo do catálogo.',
@@ -380,6 +384,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     'Saiu para o OBIA (observatório nacional)': 'Seguiu o link para o Observatório Brasileiro de IA.',
   };
 
+  let allActions = false;
   let P = '30';
   try { const s = localStorage.getItem('obs-periodo'); if (s && D.periodos[s]) P = s; } catch {}
 
@@ -442,7 +447,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
 
   // ── barras ──
   // A barra inteira = 100% do total; o trecho pintado é a fatia do item (o mesmo % escrito ao lado)
-  const SINGULAR = { visitantes: 'visitante', visitas: 'visita', cliques: 'clique', 'páginas vistas': 'página vista' };
+  const SINGULAR = { 'ações': 'ação', visitantes: 'visitante', visitas: 'visita', cliques: 'clique', 'páginas vistas': 'página vista' };
   const pctTxt = (v, t) => { const x = t ? 100 * v / t : 0; return x > 0 && x < 1 ? '<1%' : `${Math.round(x)}%`; };
   function barras(el, itens, { desc, unidade = '', limite = 10 } = {}) {
     const lista = itens.slice(0, limite);
@@ -461,21 +466,22 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   function destaque(p) {
     const d = p.destaque;
     if (D.edicaoDestaque) $('dest-titulo').textContent = `Tema atual: “${D.edicaoDestaque}”`;
-    if (!d || (!d.cliques && !d.viram)) { $('destaque').innerHTML = '<p class="vazio">Ninguém interagiu com o destaque neste período.</p>'; return; }
+    if (!d || (!d.cliques && !d.viram)) { $('destaque').innerHTML = '<p class="vazio">Não há interações registradas com o destaque atual neste período.</p>'; return; }
     const tile = (n, lbl, exp) => `<div><b class="num">${n}</b><span>${lbl}</span><small>${exp}</small></div>`;
     $('destaque').innerHTML = `
       <div class="mini-kpis">
         ${d.viram ? tile(fmt(d.viram), 'viram o destaque', 'Pessoas que rolaram a página até o destaque aparecer na tela.') : ''}
-        ${tile(fmt(d.pessoas), 'clicaram em algo', 'Pessoas que abriram pelo menos um texto, áudio ou slide.')}
+        ${tile(fmt(d.pessoas), 'clicaram em algo', 'Pessoas que abriram ao menos um material ou o levantamento.')}
         ${tile(fmt(d.cliques), 'cliques no total', 'Somando todos os materiais — uma pessoa pode clicar em vários.')}
       </div>
       <div class="duo">
         <div><div class="sub-h">O que as pessoas fizeram<small>parte de cada tipo de clique no total</small></div><div class="bars compact" id="dest-tipo"></div></div>
-        <div><div class="sub-h">Materiais mais procurados<small>cliques no texto, áudio ou slides de cada item</small></div><div class="bars compact" id="dest-item"></div></div>
-      </div>`;
+        <div><div class="sub-h">Materiais mais procurados<small>cliques em cada documento, áudio, apresentação ou levantamento</small></div><div class="bars compact" id="dest-item"></div></div>
+      </div>
+      <p class="nota">Os números consideram os dias desta edição. A medição das aberturas do levantamento pelo destaque começou em 19/10/2026; acessos anteriores não são recuperáveis por este indicador.</p>`;
     barras('dest-tipo', d.porTipo, { unidade: 'cliques' });
     barras('dest-item', d.porItem, { unidade: 'cliques' });
-    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Sem cliques nos materiais do tema atual neste período.</p>';
+    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Não há cliques registrados nos materiais do tema atual neste período.</p>';
   }
 
   function dispositivos(p) {
@@ -591,6 +597,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     const p = D.periodos[P];
     document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === P));
     $('resumo').innerHTML = resumo(p);
+    if (D.destaqueEmCache) $('resumo').innerHTML += ' O destaque usa a última edição disponível; sua atualização será tentada na próxima coleta.';
     kpis(p);
     destaque(p);
     barras('secoes', p.secoes, { desc: i => DESC_SECOES[i.nome], unidade: 'páginas vistas' });
@@ -598,7 +605,8 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     barras('fontes', p.fontes, { limite: 8, unidade: 'visitas' });
     barras('cidades', p.cidades, { limite: 8, unidade: 'visitantes' });
     barras('paises', p.paises, { limite: 8, unidade: 'visitantes' });
-    barras('acoes', p.acoes, { limite: 12, desc: i => DESC_ACOES[i.nome], unidade: 'cliques' });
+    barras('acoes', p.acoes, { limite: allActions ? p.acoes.length : 12, desc: i => DESC_ACOES[i.nome], unidade: 'ações' });
+    $('todas-acoes').hidden = p.acoes.length <= 12;
     dispositivos(p);
     barras('navegadores', p.navegadores ?? [], { unidade: 'visitantes' });
     barras('sistemas', p.sistemas ?? [], { unidade: 'visitantes' });
@@ -616,6 +624,7 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     try { localStorage.setItem('obs-periodo', P); } catch {}
     render();
   };
+  $('todas-acoes').onclick = () => { allActions = !allActions; $('todas-acoes').setAttribute('aria-expanded', String(allActions)); $('todas-acoes').textContent = allActions ? 'Mostrar as principais interações' : 'Ver todas as interações'; render(); };
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(desenharLinha, 120); });
 
   $('sub').innerHTML = `Um retrato simples de quantas pessoas acessam o site, de onde vêm e o que procuram. Dados até <strong>${dataLonga(D.ate)}</strong>.`;

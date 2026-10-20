@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readReport,sectionLabel,actionLabel,mergeMaterials,validateManifest} from '../analytics-model.mjs';
+import {readReport,sectionLabel,actionLabel,mergeMaterials,validateManifest,reportUsage} from '../analytics-model.mjs';
 
 test('all API pages retain production scope and combine event filters, beyond the old 250-day limit',async()=>{
  const requests=[];
@@ -39,4 +39,30 @@ test('current material metadata repairs generic labels without removing past edi
  assert.equal(result['https://example.org/audio'].titulo,'Podcast');assert.equal(result['https://example.org/old'].edicao,'Edição anterior');
  assert.equal(old['https://example.org/audio'].titulo,'Link no texto de apresentação');
  assert.throws(()=>validateManifest({...manifest,materials:[...manifest.materials,...manifest.materials]}),/duplicado/);
+});
+
+
+test('parallel reports and pagination stay within five active calls and recover slots after an API failure',async()=>{
+ let active=0,peak=0;
+ const client={runReport:async request=>{
+   active++;peak=Math.max(peak,active);
+   assert.equal(request.returnPropertyQuota,true);
+   try {
+     await new Promise(resolve=>setTimeout(resolve,5));
+     if(request.metrics[0].name==='fail')throw Error('simulated API failure');
+     return [{rowCount:2,rows:[{dimensionValues:[{value:String(request.offset)}],metricValues:[{value:'1'}]}],
+       propertyQuota:{tokensPerDay:{consumed:3,remaining:199000},tokensPerHour:{remaining:39000},tokensPerProjectPerHour:{remaining:13000}}}];
+   }finally{active--;}
+ }};
+ const jobs=Array.from({length:16},(_,i)=>readReport(client,'properties/1','example.org','yesterday','yesterday',['date'],[i===0?'fail':'eventCount']));
+ const results=await Promise.allSettled(jobs);
+ assert.equal(results.filter(x=>x.status==='rejected').length,1);
+ assert.equal(results.filter(x=>x.status==='fulfilled').length,15);
+ for(const result of results.filter(x=>x.status==='fulfilled'))assert.equal(result.value.length,2);
+ assert.equal(peak,5);assert.equal(active,0);
+ const usage=reportUsage(client);
+ assert.equal(usage.requests,31);assert.equal(usage.maxConcurrent,5);assert.equal(usage.tokensConsumed,90);
+ assert.equal(usage.remainingTokensPerProjectPerHour,13000);
+ await readReport(client,'properties/1','example.org','yesterday','yesterday',['date'],['eventCount']);
+ assert.equal(reportUsage(client).requests,33);
 });

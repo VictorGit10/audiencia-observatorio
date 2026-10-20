@@ -61,6 +61,41 @@ export function mergeMaterials(previous, manifest) {
   return links;
 }
 
+// A shared queue also limits calls launched by different periods and paginated reports.
+const requestStates = new WeakMap();
+function requestState(client) {
+  if (!requestStates.has(client)) requestStates.set(client, {active:0,waiting:[],requests:0,maxConcurrent:0,tokensConsumed:null,quota:null});
+  return requestStates.get(client);
+}
+export function reportUsage(client) {
+  const state = requestState(client);
+  return {requests:state.requests,maxConcurrent:state.maxConcurrent,tokensConsumed:state.tokensConsumed,
+    remainingTokensPerDay:state.quota?.tokensPerDay?.remaining ?? null,
+    remainingTokensPerHour:state.quota?.tokensPerHour?.remaining ?? null,
+    remainingTokensPerProjectPerHour:state.quota?.tokensPerProjectPerHour?.remaining ?? null};
+}
+async function limitedReport(client, request) {
+  const state = requestState(client);
+  if (state.active >= 5) await new Promise(resolve => state.waiting.push(resolve));
+  else state.active++;
+  state.maxConcurrent = Math.max(state.maxConcurrent, state.active);
+  state.requests++;
+  try {
+    const response = await client.runReport({...request,returnPropertyQuota:true});
+    const quota = response[0]?.propertyQuota;
+    if (quota) {
+      state.quota = quota;
+      if (quota.tokensPerDay?.consumed != null) state.tokensConsumed = (state.tokensConsumed ?? 0) + Number(quota.tokensPerDay.consumed);
+    }
+    return response;
+  } finally {
+    // Hand the occupied slot straight to the next waiter, including after API errors.
+    const next = state.waiting.shift();
+    if (next) next();
+    else state.active--;
+  }
+}
+
 export async function readReport(client, property, hostName, inicio, fim, dims, mets, extra={}) {
   if (!hostName) throw Error('Domínio de produção não configurado');
   const {dimensionFilter, ...options} = extra;
@@ -76,7 +111,7 @@ export async function readReport(client, property, hostName, inicio, fim, dims, 
   const rows=[];
   let offset=0;
   for (;;) {
-    const [response] = await client.runReport({...request,offset});
+    const [response] = await limitedReport(client, {...request,offset});
     const page=response.rows??[];
     rows.push(...page.map(row=>({d:(row.dimensionValues??[]).map(v=>v.value),m:(row.metricValues??[]).map(v=>Number(v.value))})));
     offset+=page.length;

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { exec } from 'node:child_process';
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
-import { sectionLabel, actionLabel, validateManifest, mergeMaterials, readReport } from './analytics-model.mjs';
+import { sectionLabel, actionLabel, validateManifest, mergeMaterials, readReport, reportUsage } from './analytics-model.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CI = !!process.env.CI;
@@ -253,6 +253,7 @@ async function coletar() {
 
 try {
   const dados = await coletar();
+  console.log(`  ℹ uso da API: ${JSON.stringify(reportUsage(client))}`);
   writeFileSync(join(HERE, 'data.js'), `// GERADO por ga.mjs — não editar\nwindow.__GA_DATA__ = ${JSON.stringify(dados)};\n`);
   mkdirSync(join(HERE, 'snapshots'), { recursive: true });
   writeFileSync(join(HERE, 'snapshots', `${ONTEM}.json`), JSON.stringify(dados));

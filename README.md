@@ -6,7 +6,7 @@ Relatório público de audiência do [Observatório UFG-IA](https://lapig-ufg.gi
 
 ## Como funciona
 
-- Todo dia às 06:00 (Brasília), o workflow [`atualizar.yml`](.github/workflows/atualizar.yml) roda `node ga.mjs`, que consulta a GA Data API e grava `data.js` + um snapshot em `snapshots/AAAA-MM-DD.json`.
+- Todos os dias às 03:00 e às 15:00 (Brasília), o workflow [`atualizar.yml`](.github/workflows/atualizar.yml) roda `node ga.mjs`, que consulta a GA Data API e grava `data.js` + um snapshot em `snapshots/AAAA-MM-DD.json`.
 - O commit desses arquivos atualiza o GitHub Pages sozinho.
 - Para atualizar na hora: aba **Actions → Atualizar dados → Run workflow**.
 - Os snapshots guardam o histórico no próprio repositório, independentemente do prazo de retenção do GA4.
@@ -39,3 +39,5 @@ Nomes antigos e atuais das seções e suas traduções são agrupados. Eventos c
 Validação: `npm test`. Para usar uma chave existente fora deste diretório, defina `GA_KEY_FILE` com seu caminho e `CI=true` antes de executar `npm run coletar`. A chave nunca deve entrar no repositório.
 
 Teste visual e de eventos: com o Observatório compilado, execute `OBSERVATORIO_DIST=<pasta dist> SMOKE_OUTPUT=<pasta de evidências> npm run test:browser` (no PowerShell, defina essas variáveis com `$env:`). O teste usa Chrome headless, serve os artefatos localmente no contexto do domínio de produção e intercepta as requisições de coleta, sem enviá-las ao GA.
+
+O agendamento usa 06:00 e 18:00 UTC, equivalentes a 03:00 e 15:00 em Brasília. O GitHub pode atrasar a execução. A primeira coleta apresenta a leitura inicial do dia anterior; a segunda incorpora o processamento posterior. O dia corrente continua fora dos relatórios. As chamadas ao GA são limitadas a cinco simultâneas por cliente; o log da coleta registra o número de consultas, os tokens de cota consumidos e o saldo informado pela API.

@@ -627,9 +627,11 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
   $('todas-acoes').onclick = () => { allActions = !allActions; $('todas-acoes').setAttribute('aria-expanded', String(allActions)); $('todas-acoes').textContent = allActions ? 'Mostrar as principais interações' : 'Ver todas as interações'; render(); };
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(desenharLinha, 120); });
 
-  $('sub').innerHTML = `Um retrato simples de quantas pessoas acessam o site, de onde vêm e o que procuram. Dados até <strong>${dataLonga(D.ate)}</strong>.`;
-  const ger = new Date(D.geradoEm).toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
-  $('rodape').textContent = `Atualizado em ${ger} · Coleta do Google Analytics começou em ${dataLonga(D.inicioColeta)}.`;
+  const g = new Date(D.geradoEm);
+  const gerCurto = g.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' }) + ' às ' + g.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+  $('sub').innerHTML = `Um retrato simples de quantas pessoas acessam o site, de onde vêm e o que procuram. Dados até <strong>${dataLonga(D.ate)}</strong> · Última atualização: <strong>${gerCurto}</strong> (horário de Brasília).`;
+  const ger = g.toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
+  $('rodape').textContent = `Atualizado em ${ger} (horário de Brasília) · Coleta do Google Analytics começou em ${dataLonga(D.inicioColeta)}.`;
   tabelaDiaria();
   render();
 })();

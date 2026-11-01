@@ -203,5 +203,15 @@
   "titulo": "Magnifica Humanitas",
   "tipo": "Viu a apresentação",
   "edicao": "Magnifica Humanitas: a dignidade humana na era da IA"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/por-dentro-da-ia/redes-neurais/": {
+  "titulo": "Como construir uma rede neural pequena, treinável e totalmente visível",
+  "tipo": "Abriu a aula interativa",
+  "edicao": "Do neurônio ao campus: entender para decidir"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/#levantamentos/ia-propria": {
+  "titulo": "Quanto custa ter uma IA própria rodando dentro da universidade?",
+  "tipo": "Explorou o levantamento",
+  "edicao": "Do neurônio ao campus: entender para decidir"
  }
 }

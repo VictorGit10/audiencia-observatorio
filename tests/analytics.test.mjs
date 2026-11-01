@@ -66,3 +66,10 @@ test('parallel reports and pagination stay within five active calls and recover 
  await readReport(client,'properties/1','example.org','yesterday','yesterday',['date'],['eventCount']);
  assert.equal(reportUsage(client).requests,33);
 });
+
+test('lesson materials from the Observatório are accepted and unknown kinds still fail',()=>{
+ const manifest=validateManifest({schemaVersion:1,edition:'Do neurônio ao campus',startsOn:'2026-10-31',materials:[{href:'https://lapig-ufg.github.io/observatorio-ia/por-dentro-da-ia/redes-neurais/',title:'Rede neural',kind:'lesson'},{href:'https://lapig-ufg.github.io/observatorio-ia/#levantamentos/ia-propria',title:'IA própria',kind:'survey'}]});
+ const links=mergeMaterials({},manifest);
+ assert.equal(links['https://lapig-ufg.github.io/observatorio-ia/por-dentro-da-ia/redes-neurais/'].tipo,'Abriu a aula interativa');
+ assert.throws(()=>validateManifest({...manifest,materials:[{href:'https://example.org/x',title:'X',kind:'unknown'}]}),/inválido/);
+});

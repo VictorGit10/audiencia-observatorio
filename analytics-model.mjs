@@ -45,16 +45,18 @@ export function actionLabel(name, legacy = {}) {
   return NEW_ACTIONS[canonical] ?? legacy[canonical] ?? 'Outras interações no site';
 }
 
+// Must match the kinds accepted by observatorio-ia/scripts/analytics-manifest.mjs.
+export const MATERIAL_KINDS = ['audio', 'presentation', 'document', 'survey', 'lesson'];
 export function validateManifest(value) {
   if (value?.schemaVersion !== 1 || !value.edition || !/^\d{4}-\d{2}-\d{2}$/.test(value.startsOn) || !value.materials?.length) throw Error('Manifesto de audiência ausente ou inválido');
   const seen = new Set();
   for (const item of value.materials) {
-    if (!item.title || !['audio', 'presentation', 'document', 'survey'].includes(item.kind) || !/^(https:\/\/|#)/.test(item.href) || seen.has(item.href)) throw Error('Material de destaque inválido ou duplicado');
+    if (!item.title || !MATERIAL_KINDS.includes(item.kind) || !/^(https:\/\/|#)/.test(item.href) || seen.has(item.href)) throw Error('Material de destaque inválido ou duplicado');
     seen.add(item.href);
   }
   return value;
 }
-export const MATERIAL_LABELS = {audio:'Ouviu a análise em áudio',presentation:'Viu a apresentação',document:'Abriu o documento',survey:'Explorou o levantamento'};
+export const MATERIAL_LABELS = {audio:'Ouviu a análise em áudio',presentation:'Viu a apresentação',document:'Abriu o documento',survey:'Explorou o levantamento',lesson:'Abriu a aula interativa'};
 export function mergeMaterials(previous, manifest) {
   const links = {...previous};
   for (const item of manifest.materials) links[item.href] = {titulo:item.title,tipo:MATERIAL_LABELS[item.kind],edicao:manifest.edition};

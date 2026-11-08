@@ -1,20 +1,25 @@
 {
   "schemaVersion": 1,
-  "edition": "Do neurônio ao campus: entender para decidir",
-  "startsOn": "2026-10-31",
+  "edition": "State of AI Report 2026",
+  "startsOn": "2026-11-08",
   "editionAliases": [
-    "From neuron to campus: understand, then decide"
+    "State of AI Report 2026"
   ],
   "materials": [
     {
-      "title": "Como construir uma rede neural pequena, treinável e totalmente visível",
-      "kind": "lesson",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/por-dentro-da-ia/redes-neurais/"
+      "title": "As 244 lâminas do State of AI Report 2026",
+      "kind": "presentation",
+      "href": "https://www.stateof.ai/State-of-AI-Report-2026.pdf"
     },
     {
-      "title": "Quanto custa ter uma IA própria rodando dentro da universidade?",
-      "kind": "survey",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/#levantamentos/ia-propria"
+      "title": "Explore the 2026 report",
+      "kind": "document",
+      "href": "https://www.stateof.ai/2026-explore/"
+    },
+    {
+      "title": "O gargalo da IA é físico",
+      "kind": "audio",
+      "href": "https://drive.google.com/file/d/1t6HZOeQTxRr_Jp6CIVfmQUJPDdZaiY-K/view"
     }
   ]
 }

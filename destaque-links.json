@@ -213,5 +213,20 @@
   "titulo": "Quanto custa ter uma IA própria rodando dentro da universidade?",
   "tipo": "Explorou o levantamento",
   "edicao": "Do neurônio ao campus: entender para decidir"
+ },
+ "https://www.stateof.ai/State-of-AI-Report-2026.pdf": {
+  "titulo": "As 244 lâminas do State of AI Report 2026",
+  "tipo": "Viu a apresentação",
+  "edicao": "State of AI Report 2026"
+ },
+ "https://www.stateof.ai/2026-explore/": {
+  "titulo": "Explore the 2026 report",
+  "tipo": "Abriu o documento",
+  "edicao": "State of AI Report 2026"
+ },
+ "https://drive.google.com/file/d/1t6HZOeQTxRr_Jp6CIVfmQUJPDdZaiY-K/view": {
+  "titulo": "O gargalo da IA é físico",
+  "tipo": "Ouviu a análise em áudio",
+  "edicao": "State of AI Report 2026"
  }
 }

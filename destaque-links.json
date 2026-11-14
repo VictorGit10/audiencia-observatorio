@@ -228,5 +228,20 @@
   "titulo": "O gargalo da IA é físico",
   "tipo": "Ouviu a análise em áudio",
   "edicao": "State of AI Report 2026"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/aula.html": {
+  "titulo": "Assista à aula",
+  "tipo": "Abriu a aula interativa",
+  "edicao": "Do chat ao agente"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica.html": {
+  "titulo": "Pratique no navegador",
+  "tipo": "Abriu a aula interativa",
+  "edicao": "Do chat ao agente"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica-3.html": {
+  "titulo": "Pratique no computador",
+  "tipo": "Abriu a aula interativa",
+  "edicao": "Do chat ao agente"
  }
 }

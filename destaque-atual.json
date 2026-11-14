@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "edition": "State of AI Report 2026",
-  "startsOn": "2026-11-08",
+  "edition": "Do chat ao agente",
+  "startsOn": "2026-11-15",
   "editionAliases": [
-    "State of AI Report 2026"
+    "From chat to agent"
   ],
   "materials": [
     {
-      "title": "As 244 lâminas do State of AI Report 2026",
-      "kind": "presentation",
-      "href": "https://www.stateof.ai/State-of-AI-Report-2026.pdf"
+      "title": "Assista à aula",
+      "kind": "lesson",
+      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/aula.html"
     },
     {
-      "title": "Explore the 2026 report",
-      "kind": "document",
-      "href": "https://www.stateof.ai/2026-explore/"
+      "title": "Pratique no navegador",
+      "kind": "lesson",
+      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica.html"
     },
     {
-      "title": "O gargalo da IA é físico",
-      "kind": "audio",
-      "href": "https://drive.google.com/file/d/1t6HZOeQTxRr_Jp6CIVfmQUJPDdZaiY-K/view"
+      "title": "Pratique no computador",
+      "kind": "lesson",
+      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica-3.html"
     }
   ]
 }

@@ -150,7 +150,23 @@ async function destaque(inicio, fim, {links, edicao, manifest}) {
   if(survey && internalCount) {soma(tipos,'Explorou o levantamento',internalCount);soma(itens,survey.title,internalCount);}
   const ordenar=map=>[...map].map(([nome,valor])=>({nome,valor})).sort((a,b)=>b.valor-a.valor);
   const porTipo=ordenar(tipos);
-  return {...empty,cliques:porTipo.reduce((sum,x)=>sum+x.valor,0),pessoas:pessoas[0]?.m[0]??0,viram:viram[0]?.m[0]??0,porTipo,porItem:ordenar(itens),levantamento:internalCount};
+  let totalCliques=porTipo.reduce((sum,x)=>sum+x.valor,0);
+  let totalPessoas=pessoas[0]?.m[0]??0;
+  let detalhe=true;
+  if (!totalCliques) {
+    // O evento customizado cobre também links internos, que o GA4 não registra
+    // no clique automático. Sem detalhe por URL, mostramos o total do destaque
+    // em vez de um zero que não corresponde ao que aconteceu.
+    const filtro={filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'open_featured_material'}}};
+    const [eventos,gente]=await Promise.all([
+      relatorio(inicio,fim,[],['eventCount'],{dimensionFilter:filtro}),
+      relatorio(inicio,fim,[],['activeUsers'],{dimensionFilter:filtro}),
+    ]);
+    totalCliques=eventos[0]?.m[0]??0;
+    totalPessoas=gente[0]?.m[0]??0;
+    detalhe=false;
+  }
+  return {...empty,cliques:totalCliques,pessoas:totalPessoas,viram:viram[0]?.m[0]??0,porTipo,porItem:ordenar(itens),levantamento:internalCount,detalhe};
 }
 
 // ── cliente ─────────────────────────────────────────────────────────────────
@@ -167,7 +183,7 @@ function relatorio(inicio, fim, dims, mets, extra = {}) {
 function agrupar(linhas, rotular, idx = 0) {
   const mapa = new Map();
   for (const l of linhas) {
-    const k = rotular(l.d[0]);
+    const k = rotular(l.d[0], l.d[1]);
     if (!k) continue;
     mapa.set(k, (mapa.get(k) ?? 0) + l.m[idx]);
   }
@@ -194,7 +210,7 @@ async function periodo(chave, inicio, fim, dest) {
   const [atual, anterior, secoes, canais, fontes, cidades, paises, disp, eventos, navs, sists, idiomas, diasSem, horas] = await Promise.all([
     kpis(inicio, fim),
     temAnterior && addDays(inicio, -dias) >= INICIO_COLETA ? kpis(addDays(inicio, -dias), addDays(inicio, -1)) : null,
-    relatorio(inicio, fim, ['pageTitle'], ['screenPageViews']),
+    relatorio(inicio, fim, ['pageTitle', 'pagePath'], ['screenPageViews']),
     relatorio(inicio, fim, ['sessionDefaultChannelGroup'], ['sessions']),
     relatorio(inicio, fim, ['sessionSource'], ['sessions']),
     relatorio(inicio, fim, ['city'], ['activeUsers']),

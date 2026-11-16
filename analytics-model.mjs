@@ -1,5 +1,21 @@
 // Shared transformations and API safeguards, independently testable without credentials.
-export function sectionLabel(title) {
+function courseSection(path) {
+  if (!path.includes('/do-chat-ao-agente')) return '';
+  if (/\/do-chat-ao-agente\/?$/.test(path) || path.endsWith('/do-chat-ao-agente/index.html')) return 'Curso: início';
+  if (path.endsWith('/aula.html')) return 'Curso: aula';
+  if (path.endsWith('/pratica.html')) return 'Curso: prática no navegador';
+  if (path.endsWith('/pratica-3.html')) return 'Curso: prática no computador';
+  if (path.endsWith('/instalar.html')) return 'Curso: instalação';
+  if (/\/(?:missoes|missao-\d+)\.html$/.test(path)) return 'Curso: missões';
+  return 'Curso: demonstrações';
+}
+
+export function sectionLabel(title, path = '') {
+  const course = courseSection(path);
+  if (course) return course;
+  if (path.includes('/por-dentro-da-ia/redes-neurais')) return 'Aula: Redes neurais';
+  if (path.includes('/por-dentro-da-ia/transformers')) return 'Aula: Transformers';
+  if (path.includes('/por-dentro-da-ia/')) return 'Aula: Por dentro da IA';
   const name = title.replace(/ \| (Observatório UFG-IA|LAPIG\/UFG)$/, '').trim();
   return ({
     'Observatório UFG-IA': 'Página inicial', 'UFG-AI Observatory': 'Página inicial',
@@ -13,6 +29,13 @@ export function sectionLabel(title) {
     'AI policies in scholarly publishing': 'Políticas de IA na publicação científica',
     'Sobre': 'Sobre o Observatório', 'About': 'Sobre o Observatório',
     'Por dentro da IA — Da frase ao próximo token': 'Aula: Por dentro da IA',
+    'Por dentro da IA - Aulas interativas': 'Aula: Por dentro da IA',
+    'Redes neurais - Por dentro da IA': 'Aula: Redes neurais',
+    'Transformers - Por dentro da IA': 'Aula: Transformers',
+    'Do chat ao agente': 'Curso: início', 'Instalar o ChatGPT': 'Curso: instalação',
+    'Prática no navegador': 'Curso: prática no navegador', 'Prática no computador': 'Curso: prática no computador',
+    'A mesa de dominó': 'Curso: demonstrações', 'Mesa de Uno': 'Curso: demonstrações',
+    'Centro de massa na gangorra': 'Curso: demonstrações', 'Cinco toques': 'Curso: demonstrações',
   })[name] ?? (name === '(not set)' ? 'Seção não identificada' : name);
 }
 
@@ -21,6 +44,7 @@ export const NEW_ACTIONS = {
   nav_ai_readings: 'Foi para Leituras em IA', nav_home_task: 'Navegou pela página inicial',
   nav_home: 'Voltou à página inicial', nav_about: 'Foi para Sobre o Observatório',
   nav_featured: 'Foi para o destaque da semana', nav_experiences: 'Foi para as experiências interativas',
+  open_course_agent: 'Abriu o curso “Do chat ao agente”',
   search_from_hero: 'Pesquisou no acervo', clear_search: 'Limpou a busca', refresh_catalog: 'Atualizou o acervo',
   retry_load: 'Tentou carregar o acervo novamente', view_all_empty: 'Abriu o acervo completo após uma busca',
   survey_tab: 'Trocou de aba no levantamento', survey_download: 'Baixou dados do levantamento',

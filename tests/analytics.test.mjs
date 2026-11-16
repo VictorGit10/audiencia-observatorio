@@ -29,6 +29,19 @@ test('old and bilingual routes consolidate, while newly introduced custom events
  assert.equal(actionLabel('survey_download_en'),actionLabel('survey_download'));
  assert.equal(actionLabel('new_future_custom_event'),'Outras interações no site');
  assert.equal(actionLabel('page_view'),null);
+ assert.equal(actionLabel('open_course_agent'),'Abriu o curso “Do chat ao agente”');
+ assert.equal(sectionLabel('Do chat ao agente','/observatorio-ia/do-chat-ao-agente/'),'Curso: início');
+ assert.equal(sectionLabel('Do chat ao agente','/observatorio-ia/do-chat-ao-agente'),'Curso: início');
+ assert.equal(sectionLabel('Do chat ao agente','/observatorio-ia/do-chat-ao-agente/index.html'),'Curso: início');
+ assert.equal(sectionLabel('Do chat ao agente','/observatorio-ia/do-chat-ao-agente/aula.html'),'Curso: aula');
+ assert.equal(sectionLabel('Prática no navegador','/observatorio-ia/do-chat-ao-agente/pratica.html'),'Curso: prática no navegador');
+ assert.equal(sectionLabel('Prática no computador','/observatorio-ia/do-chat-ao-agente/pratica-3.html'),'Curso: prática no computador');
+ assert.equal(sectionLabel('Instalar o ChatGPT','/observatorio-ia/do-chat-ao-agente/instalar.html'),'Curso: instalação');
+ assert.equal(sectionLabel('Missão 1: a pasta bagunçada','/observatorio-ia/do-chat-ao-agente/missao-1.html'),'Curso: missões');
+ assert.equal(sectionLabel('A mesa de dominó','/observatorio-ia/do-chat-ao-agente/domino.html'),'Curso: demonstrações');
+ assert.equal(sectionLabel('Redes neurais - Por dentro da IA','/observatorio-ia/por-dentro-da-ia/redes-neurais/'),'Aula: Redes neurais');
+ assert.equal(sectionLabel('Transformers - Por dentro da IA','/observatorio-ia/por-dentro-da-ia/transformers/'),'Aula: Transformers');
+ assert.equal(sectionLabel('Por dentro da IA - Aulas interativas','/observatorio-ia/por-dentro-da-ia/'),'Aula: Por dentro da IA');
 });
 
 test('current material metadata repairs generic labels without removing past editions',()=>{

@@ -365,7 +365,16 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
     'Página inicial': 'Apresentação do portal, novidades e destaque da semana.',
     'Leituras em IA': 'Artigos e ensaios publicados no Medium.',
     'Políticas de IA na publicação científica': 'Levantamento de políticas, fontes, comparações e downloads.',
-    'Aula: Por dentro da IA': 'Aula interativa sobre inferência e geração de texto.',
+    'Aula: Por dentro da IA': 'Hub e aulas interativas sobre redes neurais e Transformers.',
+    'Aula: Redes neurais': 'Aula interativa sobre redes neurais, do neurônio à retropropagação.',
+    'Aula: Transformers': 'Aula interativa sobre Transformers, da frase ao próximo token.',
+    'Curso: início': 'Página de entrada do curso Do chat ao agente.',
+    'Curso: aula': 'A aula do curso, com as três fases e as demonstrações.',
+    'Curso: prática no navegador': 'Exercícios no chat de IA, sem instalar nada.',
+    'Curso: prática no computador': 'Exercícios com arquivos e pastas no computador.',
+    'Curso: instalação': 'Instalação e preparação do aplicativo de IA.',
+    'Curso: missões': 'Missões práticas do curso.',
+    'Curso: demonstrações': 'Exemplos e demonstrações usados na aula.',
     'Panorama da IA generativa': 'Régua e guia dos modelos de IA generativa.',
     'IA como notícia diária': 'Notícias sobre IA publicadas na imprensa, dia a dia.',
     'Ecossistema de IA da UFG': 'Grupos, projetos e iniciativas de IA da universidade.',
@@ -478,10 +487,10 @@ footer { margin-top: 36px; color: var(--muted); font-size: 13px; display: grid; 
         <div><div class="sub-h">O que as pessoas fizeram<small>parte de cada tipo de clique no total</small></div><div class="bars compact" id="dest-tipo"></div></div>
         <div><div class="sub-h">Materiais mais procurados<small>cliques em cada documento, áudio, apresentação ou levantamento</small></div><div class="bars compact" id="dest-item"></div></div>
       </div>
-      <p class="nota">Os números consideram os dias desta edição. A medição das aberturas do levantamento pelo destaque começou em 19/10/2026; acessos anteriores não são recuperáveis por este indicador.</p>`;
+      <p class="nota">Os números consideram os dias desta edição. A medição das aberturas do levantamento pelo destaque começou em 19/10/2026; acessos anteriores não são recuperáveis por este indicador. Os cliques em materiais internos, como o curso, passaram a ser medidos em 16/11/2026.</p>`;
     barras('dest-tipo', d.porTipo, { unidade: 'cliques' });
     barras('dest-item', d.porItem, { unidade: 'cliques' });
-    if (!d.porItem.length) $('dest-item').innerHTML = '<p class="vazio">Não há cliques registrados nos materiais do tema atual neste período.</p>';
+    if (!d.porItem.length) $('dest-item').innerHTML = d.detalhe === false && d.cliques ? '<p class="vazio">O total de cliques foi registrado; o detalhe por material ainda não existe para esta edição.</p>' : '<p class="vazio">Não há cliques registrados nos materiais do tema atual neste período.</p>';
   }
 
   function dispositivos(p) {

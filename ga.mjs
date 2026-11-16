@@ -124,7 +124,7 @@ async function linksDoDestaque() {
 async function destaque(inicio, fim, {links, edicao, manifest}) {
   // Only days when the current edition was available belong in its readership.
   inicio = inicio < manifest.startsOn ? manifest.startsOn : inicio;
-  const empty = {cliques:0,pessoas:0,viram:0,porTipo:[],porItem:[],levantamento:0,levantamentoDesde:'2026-10-19'};
+  const empty = {cliques:0,pessoas:0,viram:0,porTipo:[],porItem:[],levantamento:0,levantamentoDesde:'2026-10-19',detalhe:false};
   if (inicio > fim) return empty;
   const urls = manifest.materials.filter(x=>x.href.startsWith('https://')).map(x=>x.href);
   const external = {andGroup:{expressions:[
@@ -150,23 +150,16 @@ async function destaque(inicio, fim, {links, edicao, manifest}) {
   if(survey && internalCount) {soma(tipos,'Explorou o levantamento',internalCount);soma(itens,survey.title,internalCount);}
   const ordenar=map=>[...map].map(([nome,valor])=>({nome,valor})).sort((a,b)=>b.valor-a.valor);
   const porTipo=ordenar(tipos);
-  let totalCliques=porTipo.reduce((sum,x)=>sum+x.valor,0);
-  let totalPessoas=pessoas[0]?.m[0]??0;
-  let detalhe=true;
-  if (!totalCliques) {
-    // O evento customizado cobre também links internos, que o GA4 não registra
-    // no clique automático. Sem detalhe por URL, mostramos o total do destaque
-    // em vez de um zero que não corresponde ao que aconteceu.
-    const filtro={filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'open_featured_material'}}};
-    const [eventos,gente]=await Promise.all([
-      relatorio(inicio,fim,[],['eventCount'],{dimensionFilter:filtro}),
-      relatorio(inicio,fim,[],['activeUsers'],{dimensionFilter:filtro}),
-    ]);
-    totalCliques=eventos[0]?.m[0]??0;
-    totalPessoas=gente[0]?.m[0]??0;
-    detalhe=false;
-  }
-  return {...empty,cliques:totalCliques,pessoas:totalPessoas,viram:viram[0]?.m[0]??0,porTipo,porItem:ordenar(itens),levantamento:internalCount,detalhe};
+  const totalPorTipo=porTipo.reduce((sum,x)=>sum+x.valor,0);
+  // O evento open_featured_material cobre todo clique, inclusive os internos que
+  // o GA4 não registra no clique automático. O clique por URL fica só no detalhe.
+  const filtro={filter:{fieldName:'eventName',stringFilter:{matchType:'EXACT',value:'open_featured_material'}}};
+  const [eventos,gente]=await Promise.all([
+    relatorio(inicio,fim,[],['eventCount'],{dimensionFilter:filtro}),
+    relatorio(inicio,fim,[],['activeUsers'],{dimensionFilter:filtro}),
+  ]);
+  const totalMaterial=eventos[0]?.m[0]??0;
+  return {...empty,cliques:totalMaterial||totalPorTipo,pessoas:totalMaterial?(gente[0]?.m[0]??0):(pessoas[0]?.m[0]??0),viram:viram[0]?.m[0]??0,porTipo,porItem:ordenar(itens),levantamento:internalCount,detalhe:porTipo.length>0};
 }
 
 // ── cliente ─────────────────────────────────────────────────────────────────

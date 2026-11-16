@@ -243,5 +243,10 @@
   "titulo": "Pratique no computador",
   "tipo": "Abriu a aula interativa",
   "edicao": "Do chat ao agente"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/": {
+  "titulo": "Acessar o curso",
+  "tipo": "Abriu a aula interativa",
+  "edicao": "Do chat ao agente"
  }
 }

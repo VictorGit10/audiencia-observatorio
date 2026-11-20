@@ -1,30 +1,30 @@
 {
   "schemaVersion": 1,
-  "edition": "Do chat ao agente",
-  "startsOn": "2026-11-15",
+  "edition": "IA na educação brasileira",
+  "startsOn": "2026-11-20",
   "editionAliases": [
-    "From chat to agent"
+    "AI in Brazilian education"
   ],
   "materials": [
     {
-      "title": "Assista à aula",
-      "kind": "lesson",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/aula.html"
+      "title": "Resolução CNE/CP nº 1/2026",
+      "kind": "document",
+      "href": "https://www.in.gov.br/web/dou/-/resolucao-cne/cp-n-1-de-11-de-novembro-de-2026-744136563"
     },
     {
-      "title": "Pratique no navegador",
-      "kind": "lesson",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica.html"
+      "title": "Resolução CNE/CP nº 1/2026",
+      "kind": "document",
+      "href": "https://lapig-ufg.github.io/observatorio-ia/?item=documento-cne-cp-parecer-15-2026#item"
     },
     {
-      "title": "Pratique no computador",
-      "kind": "lesson",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/pratica-3.html"
+      "title": "Diretrizes de IA na educação brasileira",
+      "kind": "presentation",
+      "href": "https://drive.google.com/file/d/1fnq7F2oIsrEtgSSmKknfFpWA80D3Udpo/view"
     },
     {
-      "title": "Acessar o curso",
-      "kind": "lesson",
-      "href": "https://lapig-ufg.github.io/observatorio-ia/do-chat-ao-agente/"
+      "title": "Novas regras da IA nas escolas",
+      "kind": "audio",
+      "href": "https://drive.google.com/file/d/1tbsRLBdu299Yv8lXj0ytUO7dIyCwP4Nk/view"
     }
   ]
 }

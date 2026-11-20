@@ -248,5 +248,25 @@
   "titulo": "Acessar o curso",
   "tipo": "Abriu a aula interativa",
   "edicao": "Do chat ao agente"
+ },
+ "https://www.in.gov.br/web/dou/-/resolucao-cne/cp-n-1-de-11-de-novembro-de-2026-744136563": {
+  "titulo": "Resolução CNE/CP nº 1/2026",
+  "tipo": "Abriu o documento",
+  "edicao": "IA na educação brasileira"
+ },
+ "https://lapig-ufg.github.io/observatorio-ia/?item=documento-cne-cp-parecer-15-2026#item": {
+  "titulo": "Resolução CNE/CP nº 1/2026",
+  "tipo": "Abriu o documento",
+  "edicao": "IA na educação brasileira"
+ },
+ "https://drive.google.com/file/d/1fnq7F2oIsrEtgSSmKknfFpWA80D3Udpo/view": {
+  "titulo": "Diretrizes de IA na educação brasileira",
+  "tipo": "Viu a apresentação",
+  "edicao": "IA na educação brasileira"
+ },
+ "https://drive.google.com/file/d/1tbsRLBdu299Yv8lXj0ytUO7dIyCwP4Nk/view": {
+  "titulo": "Novas regras da IA nas escolas",
+  "tipo": "Ouviu a análise em áudio",
+  "edicao": "IA na educação brasileira"
  }
 }
